@@ -23,3 +23,9 @@ Status: Draft. Implementation is absent; every row is NOT_STARTED and verificati
 | NFR-009 | AC-001, AC-009, AC-013 | Identity/infrastructure | Session, transport and storage review |
 
 Add implementation paths and evidence links as milestones are delivered; never promote a proposed design to verified behaviour.
+
+## HL-003A evidence update — 20 November 2026
+
+FR-002 is PARTIAL: configuration domain only. AC-004 domain precedence/clearing/reference/conflict cases pass in apps/api/test/learning-configuration.test.ts. NFR-006 snapshot detachment is tested; persisted historical records remain NOT_STARTED. All onboarding, authenticated API and UI criteria remain unverified. Foundation NFR-003 checks pass for current sources. See [HL-003A](../changes/HL-003A-configuration-domain.md) for scope and commands.
+
+20 November 2026 update: curriculum domain and local API behavior are covered by 27 passing API tests in aggregate. Prisma schema validation/client generation pass, but persistence acceptance is NOT RUN and remains incomplete. Planning domain behavior tests pass; plan persistence/API remains NOT_STARTED. Full workspace lint, typecheck, tests, dependency boundaries and build passed at the final local verification.

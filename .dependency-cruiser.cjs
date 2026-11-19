@@ -7,5 +7,5 @@ module.exports = {
     { severity: 'error', name: 'mobile-no-server', from: { path: '^apps/mobile/' }, to: { path: '^apps/api/|(?:^|/)@prisma/' } },
     { severity: 'error', name: 'module-public-interface', from: { path: '^apps/api/src/modules/([^/]+)/' }, to: { path: '^apps/api/src/modules/(?!$1/)[^/]+/(?!index\\.[cm]?[jt]s$)' } }
   ],
-  options: { doNotFollow: { path: 'node_modules' }, exclude: '(^|/)(dist|node_modules|\\.expo)/', tsPreCompilationDeps: true }
+  options: { doNotFollow: { path: 'node_modules' }, exclude: '(^|/)(dist|node_modules|generated|\\.expo)/', tsPreCompilationDeps: true }
 };

@@ -1,10 +1,24 @@
 {
-  "name": "homelearn", "private": true, "packageManager": "pnpm@11.25.0", "engines": {"node": ">=22.13.0"},
+  "name": "homelearn",
+  "private": true,
+  "packageManager": "pnpm@11.25.0",
+  "engines": {
+    "node": ">=22.13.0"
+  },
   "scripts": {
-    "lint": "oxlint .", "typecheck": "pnpm -r typecheck", "test": "pnpm -r test && node --test tooling/boundaries.test.cjs",
+    "lint": "oxlint .",
+    "typecheck": "pnpm -r typecheck",
+    "test": "pnpm -r test && node --test tooling/boundaries.test.cjs",
     "boundaries": "depcruise --config .dependency-cruiser.cjs apps packages",
     "build": "pnpm --filter @homelearn/contracts build && pnpm --filter @homelearn/api build && pnpm --filter @homelearn/mobile build",
-    "dev:api": "pnpm --filter @homelearn/api dev", "dev:ios": "pnpm --filter @homelearn/mobile start"
+    "dev:api": "pnpm --filter @homelearn/api dev",
+    "dev:ios": "pnpm --filter @homelearn/mobile start"
   },
-  "devDependencies": {"@types/node":"26.6.6", "dependency-cruiser":"18.8.0", "oxlint":"1.94.0", "typescript":"6.0.3", "vitest":"5.1.1"}
+  "devDependencies": {
+    "@types/node": "26.6.6",
+    "dependency-cruiser": "18.8.0",
+    "oxlint": "1.94.0",
+    "typescript": "6.0.3",
+    "vitest": "5.1.1"
+  }
 }

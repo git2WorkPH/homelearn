@@ -22,3 +22,9 @@ An activity is an intention. A learning experience records what happened and may
 LearnerGoal associates a learner with a versioned outcome or family-defined goal. OutcomeEvidence is a link, not an assessment. Absence of evidence means limited recorded evidence, not inability.
 
 Configuration resolution is deterministic, field-wise and independently evaluated per learner. Historical records retain effective settings/provenance. Proposed mode scope is an adult UI preference; approval is pending.
+
+## Implemented configuration domain — HL-003A
+
+The public interface is apps/api/src/modules/learning-configuration/index.ts. Each dimension resolves a list of opaque definition references against a supplied catalog. Published curriculum versions must have distinct references. Missing fields inherit, [] clears, and lists replace. Unknown/duplicate/blank IDs are rejected independently of HTTP validation. Declarative conflict pairs apply to final selections; no education-method rules are hardcoded. Every explicit layer is validated even if later overridden.
+
+Resolution returns a frozen version-1 snapshot with per-dimension source scope. Inputs are copied, so later changes cannot rewrite returned snapshots. Callers must resolve each learner separately using that learner's subject settings. This is in-memory snapshot protection; durable history, family ownership, catalog persistence and API validation are not implemented. Catalog references must remain immutable/versioned when persistence is introduced.

@@ -16,3 +16,7 @@ Status: Proposed. Only documentation creation is authorised.
 Each milestone includes traceability, change justification, tests and review. Dependencies follow the sequence; content design may proceed alongside core workflows when separately authorised. Calendar estimates await authentication, storage and hosting decisions.
 
 Next action: review this specification and resolve foundation choices before requesting scoped implementation/dependency/branch permission. No commit, push, deployment or migration execution follows from documentation approval.
+
+## Approved sequence adjustment — 20 November 2026
+
+After HL-001, implement HL-003A configuration domain and tests before authentication. HL-002 is deferred, not removed from MVP. No educational API or real family data may be enabled before authentication and family isolation. Remaining HL-003 onboarding/UI/persistence still depends on HL-002. See [change scope](../changes/HL-003A-configuration-domain.md).

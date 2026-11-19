@@ -18,3 +18,7 @@ Status: Proposed tasks, not implementation authorisation.
 First implementation proposal HL-001 affects root manifests/configuration, apps/, packages/contracts/, tests/, tooling/ and compose configuration. No authentication, child data or production hosting in that task. Record exact files and dependencies before approval. Recovery preserves user work; no removal or rollback deletion is pre-authorised.
 
 HL-001 update, 20 November 2026: implementation authorised in chat and foundation created. Automated checks and iOS bundle export pass; native device E2E/signing and live database checks remain unrun. See [foundation evidence](../changes/HL-001-foundation.md). HL-002 is not yet authorised.
+
+HL-003A: approved pure learning configuration domain extracted from HL-003, sequenced immediately after foundation. Covers precedence, validation, clearing, independent learners and detached snapshots. Authentication remains deferred; no API/UI/persistence in this task.
+
+HL-003B status: pure versioned curriculum domain, in-memory API routes and Prisma schema/client setup are locally verified. Durable repository/migration remain deferred; do not treat API data as persistent. HL-004A planning domain is implemented and its tests pass; API/persistence remain pending family access.

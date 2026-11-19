@@ -1,0 +1,62 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model Curriculum {
+  id        String              @id @db.VarChar(200)
+  versions  CurriculumVersion[]
+  createdAt DateTime            @default(now()) @db.Timestamptz(3)
+}
+
+model CurriculumVersion {
+  id            String                @id @db.VarChar(240)
+  curriculumId  String                @db.VarChar(200)
+  versionLabel  String                @db.VarChar(100)
+  sourceKind    String                @db.VarChar(20)
+  publisher     String                @db.VarChar(200)
+  sourceUrl     String?               @db.Text
+  effectiveFrom DateTime              @db.Date
+  effectiveTo   DateTime?             @db.Date
+  retrievedAt   DateTime              @db.Timestamptz(3)
+  createdAt     DateTime              @default(now()) @db.Timestamptz(3)
+  curriculum    Curriculum            @relation(fields: [curriculumId], references: [id], onDelete: Restrict)
+  outcomes      LearningOutcome[]
+  learnerGoals  CurriculumLearnerGoal[]
+
+  @@unique([curriculumId, versionLabel])
+  @@index([curriculumId, effectiveFrom])
+}
+
+model LearningOutcome {
+  id                  String              @id @db.VarChar(300)
+  curriculumVersionId String              @db.VarChar(240)
+  code                String              @db.VarChar(100)
+  title               String              @db.VarChar(500)
+  description         String?             @db.Text
+  version             CurriculumVersion  @relation(fields: [curriculumVersionId], references: [id], onDelete: Restrict)
+  learnerGoals        CurriculumLearnerGoal[]
+
+  @@unique([curriculumVersionId, code])
+  @@unique([curriculumVersionId, id])
+  @@index([curriculumVersionId])
+}
+
+// Family ownership and learner foreign keys are intentionally deferred until
+// authentication/family persistence is designed. This table is not exposed by API.
+model CurriculumLearnerGoal {
+  id                  String            @id @db.VarChar(200)
+  learnerId           String            @db.VarChar(200)
+  curriculumVersionId String            @db.VarChar(240)
+  outcomeId           String            @db.VarChar(300)
+  createdAt           DateTime          @db.Timestamptz(3)
+  version             CurriculumVersion @relation(fields: [curriculumVersionId], references: [id], onDelete: Restrict)
+  outcome             LearningOutcome   @relation(fields: [curriculumVersionId, outcomeId], references: [curriculumVersionId, id], onDelete: Restrict)
+
+  @@unique([learnerId, outcomeId])
+  @@index([learnerId, createdAt])
+}

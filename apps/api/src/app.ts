@@ -1,4 +1,6 @@
 import Fastify, { LogController } from "fastify";
+import { InMemoryCurriculumRepository } from "./modules/curriculum/infrastructure/in-memory-curriculum-repository.js";
+import { registerCurriculumRoutes } from "./modules/curriculum/presentation/curriculum-routes.js";
 export function buildApp() {
   const app = Fastify({
     logger: {
@@ -26,5 +28,7 @@ export function buildApp() {
     },
     async () => ({ status: "ok" }),
   );
+  const curriculumRepository = new InMemoryCurriculumRepository();
+  void registerCurriculumRoutes(app, curriculumRepository);
   return app;
 }
