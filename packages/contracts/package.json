@@ -1,0 +1,1 @@
+{"name":"@homelearn/contracts","version":"0.0.0","private":true,"type":"module","exports":"./src/index.ts","scripts":{"typecheck":"tsc --noEmit","build":"tsc","test":"vitest run"},"dependencies":{"zod":"4.6.7"}}

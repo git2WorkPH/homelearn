@@ -16,3 +16,5 @@ Status: Proposed tasks, not implementation authorisation.
 | HL-010 | Optional AI adapter and review workflow | Separate P1 approval | AC-016 |
 
 First implementation proposal HL-001 affects root manifests/configuration, apps/, packages/contracts/, tests/, tooling/ and compose configuration. No authentication, child data or production hosting in that task. Record exact files and dependencies before approval. Recovery preserves user work; no removal or rollback deletion is pre-authorised.
+
+HL-001 update, 20 November 2026: implementation authorised in chat and foundation created. Automated checks and iOS bundle export pass; native device E2E/signing and live database checks remain unrun. See [foundation evidence](../changes/HL-001-foundation.md). HL-002 is not yet authorised.

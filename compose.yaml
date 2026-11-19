@@ -1,0 +1,18 @@
+services:
+  postgres:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_USER: homelearn
+      POSTGRES_DB: homelearn
+      POSTGRES_PASSWORD: ${HOMELEARN_DB_PASSWORD:?Set HOMELEARN_DB_PASSWORD locally}
+    ports:
+      - '127.0.0.1:5432:5432'
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U homelearn -d homelearn']
+      interval: 5s
+      timeout: 5s
+      retries: 10
+volumes:
+  postgres-data:
