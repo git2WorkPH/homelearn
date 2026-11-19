@@ -1,0 +1,13 @@
+# MVP scope
+
+Platform decision: native iPhone/iPad client using React Native with Expo; web/Next.js and Android deferred. Backend remains Fastify/PostgreSQL, with Prisma as ORM. Offline creation and synchronisation are not yet approved requirements.
+
+Status: Draft baseline derived from the user's requirements. No application implementation is approved.
+
+P0 includes FR-001 through FR-008: adult/family access, learners, resumable onboarding, both modes, configuration inheritance, curriculum goals, planning, scheduled and spontaneous records, private portfolios, PDF reporting and a small original starter library.
+
+P1 is FR-009, optional AI assistance. All P0 acceptance criteria must remain achievable with AI disabled.
+
+Excluded: child logins, tutor/group/publisher features, marketplace, billing, public child profiles, microservices, autonomous AI changes and AWS deployment. Future jurisdiction support means extensible references, not implementation of other jurisdictions now.
+
+Completion requires the [acceptance criteria](ACCEPTANCE_CRITERIA.md), required quality gates, accessibility assessment, documentation and no unresolved critical security vulnerabilities. Milestone priority controls sequence rather than removing MVP requirements.

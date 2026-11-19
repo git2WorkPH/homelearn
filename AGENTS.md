@@ -44,14 +44,14 @@ Ask permission before accessing credentials, personal/sensitive files, unrelated
 | Concern | Baseline |
 | --- | --- |
 | Language | TypeScript, strict mode |
-| Frontend | Next.js, React |
-| UI | Tailwind CSS, shadcn/ui |
+| Frontend | React Native, Expo; iPhone/iPad first; Next.js deferred |
+| UI | Native React Native components; UI library pending approval |
 | Backend | Fastify (not NestJS) |
 | Database | PostgreSQL |
-| ORM / migrations | Drizzle |
+| ORM / migrations | Prisma |
 | Runtime validation | Zod |
 | Lint | **Oxlint** |
-| Testing | Vitest, Playwright |
+| Testing | Vitest for backend/pure logic; native component/E2E tooling pending approval; Playwright deferred with web |
 | Local environment | Docker Compose |
 | Files | Private S3-compatible object storage |
 | Optional local AI | Ollama behind an adapter |
@@ -65,10 +65,10 @@ Use a **modular monolith** with Clean Architecture inside meaningful domain modu
 
 ### Layers and responsibilities
 
-- **Domain:** Entities, value objects, invariants, domain services, domain errors. No Fastify, Next.js, Drizzle, HTTP, database, AI-provider or filesystem dependencies.
+- **Domain:** Entities, value objects, invariants, domain services, domain errors. No Fastify, React Native, Expo, Prisma, HTTP, database, AI-provider or filesystem dependencies.
 - **Application:** Use cases, orchestration, ports, application policies and transaction boundaries. Depends on Domain, not concrete adapters.
-- **Infrastructure:** Drizzle repositories, object storage, authentication integrations, AI providers and other adapters. Implements inward-facing ports.
-- **Presentation:** Fastify routes/controllers and Next.js UI. Validates requests, invokes use cases, maps responses. No core business rules in handlers or components.
+- **Infrastructure:** Prisma repositories, object storage, authentication integrations, AI providers and other adapters. Implements inward-facing ports.
+- **Presentation:** Fastify routes/controllers and React Native UI. Validates requests, invokes use cases, maps responses. No core business rules in handlers or components.
 
 Dependency direction:
 
@@ -78,7 +78,7 @@ Infrastructure ─> Application / Domain (implements ports)
 Composition root wires concrete implementations to ports.
 ```
 
-Cross-module interaction must use deliberately exposed public interfaces, not imports into private internals or another module's persistence layer. No circular dependencies. Keep domain entities independent of Drizzle schemas and transport DTOs. Use dependency injection where it protects testability and boundaries; avoid boilerplate abstractions for trivial operations.
+Cross-module interaction must use deliberately exposed public interfaces, not imports into private internals or another module's persistence layer. No circular dependencies. Keep domain entities independent of Prisma schemas and transport DTOs. Use dependency injection where it protects testability and boundaries; avoid boilerplate abstractions for trivial operations.
 
 Suggested module shape (adapt to existing conventions):
 
@@ -145,7 +145,7 @@ Reports should distinguish **planned**, **completed**, **observed** and **demons
 
 - **Domain unit tests:** invariants, configuration inheritance, curriculum mapping, progress logic, unscheduled activities.
 - **Application tests:** use-case outcomes, errors, permissions and mocked/in-memory ports.
-- **Infrastructure integration tests:** real test database, Drizzle repositories, migrations, storage access and constraints.
+- **Infrastructure integration tests:** real test database, Prisma repositories, migrations, storage access and constraints.
 - **API tests:** validation, authentication, authorisation, response mapping and error handling.
 - **E2E tests:** family setup, two learner profiles, mode switching, custom goals, plans, learning records, evidence and report export.
 - **Security regression tests:** cross-family access, IDOR, unauthorised file access, malformed input, unsafe AI output.
