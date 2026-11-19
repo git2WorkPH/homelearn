@@ -28,7 +28,7 @@ function nonEmpty(value: string): boolean { return value.trim().length > 0 && va
 function validDay(value: string): boolean { return /^\d{4}-\d{2}-\d{2}$/.test(value) && !Number.isNaN(Date.parse(`${value}T00:00:00Z`)) && new Date(`${value}T00:00:00Z`).toISOString().slice(0, 10) === value; }
 function validateSchedule(schedule: Schedule): void {
   if (!Number.isFinite(Date.parse(schedule.startsAt)) || !Number.isFinite(Date.parse(schedule.endsAt)) || Date.parse(schedule.endsAt) <= Date.parse(schedule.startsAt) || !nonEmpty(schedule.timeZone)) throw new PlanningError('INVALID_SCHEDULE');
-  try { new Intl.DateTimeFormat('en', { timeZone: schedule.timeZone }); } catch { throw new PlanningError('INVALID_SCHEDULE'); }
+  try { const formatter = new Intl.DateTimeFormat('en', { timeZone: schedule.timeZone }); formatter.format(0); } catch { throw new PlanningError('INVALID_SCHEDULE'); }
 }
 function freezeSchedule(schedule: Schedule): Schedule { return Object.freeze({ ...schedule }); }
 export function createLearningPlan(input: LearningPlan): LearningPlan {

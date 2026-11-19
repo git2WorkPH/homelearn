@@ -1,1 +1,22 @@
-{"plugins":["typescript","react"],"categories":{"correctness":"error"},"rules":{"typescript/no-explicit-any":"error","typescript/no-non-null-assertion":"error"},"ignorePatterns":["**/dist/**","**/node_modules/**","**/.expo/**"]}
+{
+  "plugins": [
+    "typescript",
+    "react"
+  ],
+  "categories": {
+    "correctness": "error",
+    "suspicious": "error"
+  },
+  "rules": {
+    "typescript/no-explicit-any": "error",
+    "typescript/no-non-null-assertion": "error",
+    "react/react-in-jsx-scope": "off"
+  },
+  "ignorePatterns": [
+    "**/dist/**",
+    "**/node_modules/**",
+    "**/.expo/**",
+    "**/generated/**",
+    "**/coverage/**"
+  ]
+}
