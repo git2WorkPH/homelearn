@@ -8,5 +8,7 @@ export class InMemoryLearningRecordRepository implements LearningRecordRepositor
   async createLearnerRecord(item:LearnerLearningRecord):Promise<LearnerLearningRecord>{if(this.#records.has(item.id))throw new Error('DUPLICATE_LEARNER_RECORD');this.#records.set(item.id,item);return item;}
   async getLearnerRecord(id:string):Promise<LearnerLearningRecord|undefined>{return this.#records.get(id);}
   async listLearnerRecords(experienceId?:string):Promise<readonly LearnerLearningRecord[]>{return [...this.#records.values()].filter(item=>experienceId===undefined||item.experienceId===experienceId);}
+  async updateLearnerRecord(item:LearnerLearningRecord):Promise<LearnerLearningRecord>{if(!this.#records.has(item.id))throw new Error('LEARNER_RECORD_NOT_FOUND');this.#records.set(item.id,item);return item;}
   async createAssessment(item:OutcomeAssessment):Promise<OutcomeAssessment>{if(this.#assessments.has(item.id))throw new Error('DUPLICATE_ASSESSMENT');this.#assessments.set(item.id,item);return item;}
+  async listAssessments(learnerRecordId:string):Promise<readonly OutcomeAssessment[]>{return [...this.#assessments.values()].filter(item=>item.learnerRecordId===learnerRecordId);}
 }

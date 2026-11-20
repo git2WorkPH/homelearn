@@ -9,7 +9,9 @@ Use UUID primary keys. Family-owned tables carry non-null family_id. Parent tabl
 | users, auth_identities, sessions | Adult identities only; provider/session details pending auth choice |
 | families, family_members | User-to-family membership and role |
 | learners | Family-owned; no required user relationship |
-| curricula, curriculum_versions, subjects, learning_outcomes | Outcomes reference immutable published versions; official source and licence metadata preserved |
+| curricula, curriculum_versions, subjects, learning_outcomes | Outcomes reference immutable published versions; official source and licence metadata preserved. Subjects support jurisdiction-neutral learning levels and family-defined extensions |
+| lesson_templates, lesson_versions, lesson_steps, lesson_outcome_mappings | Reusable lessons belong to a published content pack or family; immutable published versions preserve level coverage, duration, materials, teaching steps, adaptation notes, author/editorial review, source and licence. Optional mappings point to versioned outcomes and retain jurisdiction/source/version/verified-at provenance |
+| content_packs, content_pack_coverage | Pack lifecycle, release version and explicit subject/level coverage status; do not infer full coverage from a curriculum or lesson count |
 | learner_goals | Learner to versioned outcome or custom goal |
 | learning_configurations | Validated scope: family, learner, learner-subject or activity; unique scope; schema version |
 | learning_plans, activities, activity_assignments | Assignments join activity and learner uniquely |
@@ -19,7 +21,7 @@ Use UUID primary keys. Family-owned tables carry non-null family_id. Parent tabl
 | evidence, record_evidence, outcome_evidence | Private object metadata and family-consistent associations |
 | report_exports, audit_events | Scoped export lifecycle and minimal change metadata |
 
-Global published starter/reference content must be explicitly distinguished from family content, with no family-edit path to global rows. The precise catalog schema is a design decision before migrations.
+Global published reference content must be explicitly distinguished from family content, with no family-edit path to global rows. Family adaptations fork or override a lesson for that family without mutating the published source. Lesson completion remains an activity/learning-record concern and is never an outcome assessment. The precise catalog schema and manageable content-authoring workflow are design decisions before migrations.
 
 Use created_at, updated_at, created_by and appropriate revision counters. Store instants consistently and retain scheduling timezone/local-date semantics. Birth date is optional pending minimisation decision. Validate configuration JSON with versioned schemas; relational ownership and references stay outside opaque JSON.
 

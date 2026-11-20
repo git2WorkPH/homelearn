@@ -1,5 +1,31 @@
 # Change log and justification
 
+## 20 November 2026 — K–12 lesson catalogue design and prototype
+
+Authorisation: user requested modifying the finish-product design to cover K–12 lessons across subject areas. Scope: interactive design prototype and requirements/data-model documentation; no backend content service, production lesson content or migrations.
+
+Changes: add a Lessons tab with K–12 level selection, subject filters, search, original illustrative previews, family-defined subject creation and an action to add a lesson to the weekly plan. Expand FR-008 and AC-012 to set K–12 catalogue coverage as an MVP acceptance target delivered through reviewed packs, and document versioned lesson content, explicit coverage status and separately sourced jurisdiction mappings.
+
+Rationale: make the missing curriculum discovery experience visible while setting an honest bar for the finished product. The prototype's small sample is not a completed K–12 library, and it makes no official NSW syllabus alignment claim.
+
+Validation: Oxlint, mobile TypeScript check, mobile Jest suite (2 tests), `git diff --check` and iOS Expo export pass. Expo export must run from `apps/mobile` so it resolves the package's `index.ts` entry. No packages, schema, migrations or Git branch changed.
+
+## 20 November 2026 — Interactive planning and learning prototype
+
+Authorization: user asked for a prototype to evaluate the intended finished product. See [prototype rationale and scope](planning-learning-visual-prototype.md).
+
+Changes: make the Home/Planner/Journal/Progress sample-data prototype the default iOS view, preserve access to the existing local API screen, and add prototype navigation and workflow interaction coverage. No dependencies, schema, migrations or backend behavior changed.
+
+Validation: Oxlint, mobile TypeScript check, mobile Jest tests and iOS Expo export pass. Native simulator and VoiceOver validation remain pending.
+
+## 20 November 2026 — HL-004C planning and learning workflows
+
+Authorisation: user approved continuing implementation with activity authoring/editing, observations and explicit assessments, plus API and PostgreSQL persistence tests. Authentication/family ownership and evidence/portfolios remain deferred.
+
+Changes: add activity edit API for title, learner assignments, and scheduled/flexible changes with schedule revision history; add observation update and assessment listing APIs; expose plan/activity/record/assessment workflows in the iOS app; add synthetic API, mobile interaction and opt-in PostgreSQL tests. See [HL-004C](HL-004C-planning-learning-workflows.md) for rationale, verification and limitations.
+
+Security and data impact: no migration; API remains loopback-only and uses synthetic IDs. PostgreSQL verification cleaned up only test-generated IDs. No real learner data, credentials or database URL are included in source or test output.
+
 ## 19 November 2026 — iOS frontend and Prisma specification update
 
 Authorisation: user approved updating specifications to React Native/Expo for iPhone/iPad and requested Prisma instead of Drizzle unless a strong technical objection existed. No blocking objection identified. This is documentation-only authorisation.

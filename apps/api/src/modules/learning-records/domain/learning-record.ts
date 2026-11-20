@@ -67,6 +67,16 @@ export function recordLearnerParticipation(input: LearnerLearningRecord, experie
   return Object.freeze({ ...input, configurationSnapshot: snapshot as Readonly<Record<string, unknown>> });
 }
 
+/** Parent observations can be revised or cleared without changing completion or assessment. */
+export function updateLearnerObservation(record: LearnerLearningRecord, observation: string | undefined): LearnerLearningRecord {
+  if (observation !== undefined && !nonEmpty(observation)) throw new LearningRecordError('INVALID_LEARNER_RECORD');
+  if (observation === undefined) {
+    const { observation: _observation, ...withoutObservation } = record;
+    return Object.freeze(withoutObservation);
+  }
+  return Object.freeze({ ...record, observation });
+}
+
 /** Outcome judgements require an explicit parent action and versioned curriculum context. */
 export function assessOutcome(input: OutcomeAssessment, learnerRecord: LearnerLearningRecord): OutcomeAssessment {
   if (![input.id, input.learnerRecordId, input.outcomeId, input.assessedBy].every(nonEmpty) || input.learnerRecordId !== learnerRecord.id || !instant(input.assessedAt) || !['emerging', 'developing', 'demonstrated', 'not-assessed'].includes(input.judgement) || (input.rationale !== undefined && !nonEmpty(input.rationale))) {

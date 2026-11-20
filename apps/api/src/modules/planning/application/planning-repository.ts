@@ -1,4 +1,4 @@
-import type { Activity, LearningPlan } from '../domain/planning.js';
+import type { Activity, LearningPlan, ScheduleRevision } from '../domain/planning.js';
 export interface PlanningRepository {
   createPlan(plan: LearningPlan): Promise<LearningPlan>;
   getPlan(id: string): Promise<LearningPlan | undefined>;
@@ -6,5 +6,5 @@ export interface PlanningRepository {
   createActivity(activity: Activity): Promise<Activity>;
   getActivity(id: string): Promise<Activity | undefined>;
   listActivities(planId?: string): Promise<readonly Activity[]>;
-  updateActivity(activity: Activity): Promise<Activity>;
+  updateActivity(activity: Activity, addedScheduleRevision?: ScheduleRevision): Promise<Activity>;
 }

@@ -56,6 +56,12 @@ export function assignActivityToLearners(activity: Activity, learnerIds: readonl
   if (new Set(learnerIds).size !== learnerIds.length) throw new PlanningError('DUPLICATE_LEARNER');
   return Object.freeze({ ...activity, learnerIds: Object.freeze([...learnerIds]) });
 }
+export function editActivity(activity: Activity, changes: { readonly title?: string; readonly learnerIds?: readonly string[] }): Activity {
+  const title = changes.title ?? activity.title;
+  if (!nonEmpty(title)) throw new PlanningError('INVALID_ACTIVITY');
+  const updated = { ...activity, title };
+  return changes.learnerIds === undefined ? Object.freeze(updated) : assignActivityToLearners(updated, changes.learnerIds);
+}
 export function assignActivityToPlan(activity: Activity, plan: LearningPlan): Activity {
   if (activity.familyId !== plan.familyId) throw new PlanningError('PLAN_FAMILY_MISMATCH');
   return activity;

@@ -22,8 +22,16 @@ export class PrismaLearningRecordRepository implements LearningRecordRepository 
   }
   async getLearnerRecord(id: string): Promise<LearnerLearningRecord | undefined> { const row = await this.prisma.learnerLearningRecord.findUnique({ where: { id } }); return row === null ? undefined : mapRecord(row); }
   async listLearnerRecords(experienceId?: string): Promise<readonly LearnerLearningRecord[]> { const rows = await this.prisma.learnerLearningRecord.findMany({ where: experienceId === undefined ? {} : { experienceId } }); return rows.map(mapRecord); }
+  async updateLearnerRecord(item: LearnerLearningRecord): Promise<LearnerLearningRecord> {
+    const row = await this.prisma.learnerLearningRecord.update({ where: { id: item.id }, data: { observation: item.observation ?? null } });
+    return mapRecord(row);
+  }
   async createAssessment(item: OutcomeAssessment): Promise<OutcomeAssessment> {
     const row = await this.prisma.outcomeAssessment.create({ data: { ...item, assessedAt: new Date(item.assessedAt) } });
     return { id: row.id, learnerRecordId: row.learnerRecordId, outcomeId: row.outcomeId, assessedAt: row.assessedAt.toISOString(), assessedBy: row.assessedBy, judgement: row.judgement as OutcomeAssessment['judgement'], ...(row.rationale === null ? {} : { rationale: row.rationale }) };
+  }
+  async listAssessments(learnerRecordId: string): Promise<readonly OutcomeAssessment[]> {
+    const rows = await this.prisma.outcomeAssessment.findMany({ where: { learnerRecordId }, orderBy: { assessedAt: 'asc' } });
+    return rows.map(row => ({ id: row.id, learnerRecordId: row.learnerRecordId, outcomeId: row.outcomeId, assessedAt: row.assessedAt.toISOString(), assessedBy: row.assessedBy, judgement: row.judgement as OutcomeAssessment['judgement'], ...(row.rationale === null ? {} : { rationale: row.rationale }) }));
   }
 }

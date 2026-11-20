@@ -1,5 +1,5 @@
 import { expect, test } from 'vitest';
-import { assignActivityToLearners, assignActivityToPlan, createActivity, createLearningPlan, PlanningError, rescheduleActivity } from '../src/modules/planning/index.js';
+import { assignActivityToLearners, assignActivityToPlan, createActivity, createLearningPlan, editActivity, PlanningError, rescheduleActivity } from '../src/modules/planning/index.js';
 const plan = () => createLearningPlan({ id:'plan-1', familyId:'family-1', title:'Week 1', startsOn:'2026-11-23', endsOn:'2026-11-29', status:'draft' });
 const scheduled = () => createActivity({ id:'activity-1', familyId:'family-1', planId:'plan-1', title:'Garden observations', learnerIds:['learner-a','learner-b'], schedule:{startsAt:'2026-11-24T01:00:00Z',endsAt:'2026-11-24T02:00:00Z',timeZone:'Australia/Sydney'} });
 test('supports plans, shared assignments and unscheduled activities', () => {
@@ -23,6 +23,16 @@ test('reassigns learner set without coupling learner progress', () => {
  const updated=assignActivityToLearners(scheduled(),['learner-b']);
  expect(updated.learnerIds).toEqual(['learner-b']);
  expect(scheduled().learnerIds).toEqual(['learner-a','learner-b']);
+});
+test('edits activity title and assignments while retaining schedule history', () => {
+ const activity=scheduled();
+ const rescheduled=rescheduleActivity(activity,{startsAt:'2026-11-25T01:00:00Z',endsAt:'2026-11-25T02:00:00Z',timeZone:'Australia/Sydney'},'2026-11-20T00:00:00Z','parent-1');
+ const edited=editActivity(rescheduled,{title:'Updated garden activity',learnerIds:['learner-b']});
+ expect(edited.title).toBe('Updated garden activity');
+ expect(edited.learnerIds).toEqual(['learner-b']);
+ expect(edited.scheduleHistory).toEqual(rescheduled.scheduleHistory);
+ expect(()=>editActivity(activity,{title:' '})).toThrow('INVALID_ACTIVITY');
+ expect(()=>editActivity(activity,{learnerIds:['learner-a','learner-a']})).toThrow('DUPLICATE_LEARNER');
 });
 test('rejects invalid date range, duplicate assignments and family mismatch', () => {
  expect(() => createLearningPlan({...plan(), endsOn:'2026-11-01'})).toThrow(PlanningError);

@@ -8,6 +8,7 @@
     "build": "tsc",
     "typecheck": "tsc -p tsconfig.check.json",
     "test": "vitest run",
+    "test:postgres": "node --env-file=.env ../../node_modules/vitest/vitest.mjs run test/postgres-persistence.test.ts",
     "db:generate": "prisma generate",
     "db:migrate:dev": "prisma migrate dev",
     "db:migrate:deploy": "prisma migrate deploy"

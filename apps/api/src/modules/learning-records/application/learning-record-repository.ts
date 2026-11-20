@@ -6,5 +6,7 @@ export interface LearningRecordRepository {
   createLearnerRecord(item: LearnerLearningRecord): Promise<LearnerLearningRecord>;
   getLearnerRecord(id: string): Promise<LearnerLearningRecord | undefined>;
   listLearnerRecords(experienceId?: string): Promise<readonly LearnerLearningRecord[]>;
+  updateLearnerRecord(record: LearnerLearningRecord): Promise<LearnerLearningRecord>;
   createAssessment(item: OutcomeAssessment): Promise<OutcomeAssessment>;
+  listAssessments(learnerRecordId: string): Promise<readonly OutcomeAssessment[]>;
 }

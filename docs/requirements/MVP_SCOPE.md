@@ -4,10 +4,10 @@ Platform decision: native iPhone/iPad client using React Native with Expo; web/N
 
 Status: Draft baseline derived from the user's requirements. No application implementation is approved.
 
-P0 includes FR-001 through FR-008: adult/family access, learners, resumable onboarding, both modes, configuration inheritance, curriculum goals, planning, scheduled and spontaneous records, private portfolios, PDF reporting and a small original starter library.
+P0 includes FR-001 through FR-008: adult/family access, learners, resumable onboarding, both modes, configuration inheritance, curriculum goals, planning, scheduled and spontaneous records, private portfolios, PDF reporting and a level-aware lesson catalogue spanning K–12 and the available subject areas. Full catalogue coverage is delivered as reviewed subject/level content packs and is a release acceptance target; a small illustrative prototype library alone does not satisfy it. Subject catalogue expansion and family-defined subjects are supported without changing core learning workflows.
 
 P1 is FR-009, optional AI assistance. All P0 acceptance criteria must remain achievable with AI disabled.
 
-Excluded: child logins, tutor/group/publisher features, marketplace, billing, public child profiles, microservices, autonomous AI changes and AWS deployment. Future jurisdiction support means extensible references, not implementation of other jurisdictions now.
+Excluded: child logins, tutor/group/publisher features, marketplace, billing, public child profiles, microservices, autonomous AI changes and AWS deployment. Future jurisdiction support means extensible references, not implementation of other jurisdictions now. The lesson catalogue does not certify compliance; jurisdiction-specific syllabus mappings must be separately verified and sourced.
 
 Completion requires the [acceptance criteria](ACCEPTANCE_CRITERIA.md), required quality gates, accessibility assessment, documentation and no unresolved critical security vulnerabilities. Milestone priority controls sequence rather than removing MVP requirements.

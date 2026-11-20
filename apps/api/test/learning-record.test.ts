@@ -1,5 +1,5 @@
 import { expect, test } from 'vitest';
-import { assessOutcome, LearningRecordError, recordLearnerParticipation, recordLearningExperience } from '../src/modules/learning-records/index.js';
+import { assessOutcome, LearningRecordError, recordLearnerParticipation, recordLearningExperience, updateLearnerObservation } from '../src/modules/learning-records/index.js';
 
 const experience = () => recordLearningExperience({ id: 'experience-1', familyId: 'family-1', happenedAt: '2026-11-20T02:00:00Z', title: 'Spontaneous garden study' });
 
@@ -16,6 +16,16 @@ test('completion alone does not imply an outcome assessment', () => {
   const event = experience();
   const record = recordLearnerParticipation({ id: 'record-a', experienceId: event.id, learnerId: 'learner-a', completed: true }, event);
   expect(() => assessOutcome({ id: 'assessment-1', learnerRecordId: record.id, outcomeId: 'outcome:v1:o1', assessedAt: '2026-11-20T03:00:00Z', assessedBy: 'parent-1', judgement: 'demonstrated' }, record)).toThrow('OUTCOME_VERSION_REQUIRED');
+});
+
+test('updates or clears an observation without changing completion state', () => {
+  const event = experience();
+  const record = recordLearnerParticipation({ id: 'record-a', experienceId: event.id, learnerId: 'learner-a', completed: true, observation: 'First note' }, event);
+  const updated = updateLearnerObservation(record, 'Revised note');
+  expect(updated.observation).toBe('Revised note');
+  expect(updated.completed).toBe(true);
+  expect(record.observation).toBe('First note');
+  expect(updateLearnerObservation(updated, undefined).observation).toBeUndefined();
 });
 
 test('stores explicit assessment against versioned context and freezes snapshots', () => {
