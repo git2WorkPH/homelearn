@@ -1,5 +1,15 @@
 # Change log and justification
 
+## 20 November 2026 — Lesson catalogue structure and deferred backlog
+
+Authorisation: user requested implementing the subject/level definition, lesson template and review/coverage design, deferring NSW references, and recording deferred work for later.
+
+Changes: specify the shared subject/strand taxonomy and Kindergarten–Year 12 labels; define lesson fields, editorial lifecycle and level/strand coverage semantics; extend the Lessons prototype with a detailed lesson preview and illustrative review-coverage view; add backlog tasks HL-011–HL-013 for catalogue implementation, reviewed K–12 content authoring and later NSW source mapping. Existing authentication, evidence/portfolio, reports and accessibility tasks remain in the backlog. See [catalogue foundation rationale](lesson-catalogue-foundation.md) and [catalogue plan](../requirements/LESSON_CATALOGUE_PLAN.md).
+
+Rationale: agree on what the finished product needs to represent before implementing persistence or authoring tools. NSW references and the full lesson corpus remain deferred as requested.
+
+Validation: targeted Oxlint, mobile TypeScript, mobile Jest (2 tests), iOS Expo export and `git diff --check` pass. The sample coverage statuses remain explicitly illustrative and are not editorial evidence.
+
 ## 20 November 2026 — K–12 lesson catalogue design and prototype
 
 Authorisation: user requested modifying the finish-product design to cover K–12 lessons across subject areas. Scope: interactive design prototype and requirements/data-model documentation; no backend content service, production lesson content or migrations.

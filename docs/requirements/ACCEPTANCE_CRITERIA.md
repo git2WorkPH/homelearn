@@ -17,7 +17,7 @@ Status: Draft; all execution evidence NOT RUN. Synthetic fixtures only.
 | AC-009 | Upload permitted evidence; original remains private, unsafe/oversized uploads fail and rejected objects cannot be served |
 | AC-010 | Filter learner portfolio by date, subject and goal; only authorised records appear |
 | AC-011 | Export PDF and evidence references; distinguish planned/completed/observed/demonstrated and show limited evidence without claiming failure or compliance |
-| AC-012 | Browse the published lesson catalogue by configurable K–12 learning level, subject and search; preview an original lesson’s focus, materials/steps, duration and provenance; adapt or schedule it without changing the shared source or recording mastery. Catalogue release evidence shows reviewed content coverage for every required level/subject combination, with gaps visible rather than implied |
+| AC-012 | Browse by Kindergarten/Years 1–12, learning area, strand and search. Preview level-appropriate learning intent, materials, steps, adaptations, estimated time and provenance. Review workflow records status, reviewer and date; coverage is tracked per level/strand with gaps visible. “Available” is distinct from “Complete to defined scope”. Parent adaptations do not change shared versions or imply mastery. NSW syllabus references are out of scope until separately verified |
 | AC-013 | Substitute another family's IDs across reads, writes, links, uploads, downloads and exports; access fails without leaking content |
 | AC-014 | Malformed inputs fail safely and logs contain no secrets or child narratives |
 | AC-015 | Complete the core parent journey with AI disabled |

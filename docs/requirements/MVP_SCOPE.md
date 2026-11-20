@@ -4,7 +4,7 @@ Platform decision: native iPhone/iPad client using React Native with Expo; web/N
 
 Status: Draft baseline derived from the user's requirements. No application implementation is approved.
 
-P0 includes FR-001 through FR-008: adult/family access, learners, resumable onboarding, both modes, configuration inheritance, curriculum goals, planning, scheduled and spontaneous records, private portfolios, PDF reporting and a level-aware lesson catalogue spanning K–12 and the available subject areas. Full catalogue coverage is delivered as reviewed subject/level content packs and is a release acceptance target; a small illustrative prototype library alone does not satisfy it. Subject catalogue expansion and family-defined subjects are supported without changing core learning workflows.
+P0 includes FR-001 through FR-008: adult/family access, learners, resumable onboarding, both modes, configuration inheritance, curriculum goals, planning, scheduled and spontaneous records, private portfolios, PDF reporting and a reviewed Kindergarten–Year 12 lesson catalogue across its defined subject/strand scope. The catalogue design is specified in [LESSON_CATALOGUE_PLAN.md](LESSON_CATALOGUE_PLAN.md); the prototype's small illustrative library is not complete content or persisted catalogue functionality. Reviewed pack delivery and explicit level/strand coverage are release acceptance requirements. NSW syllabus mapping is deferred to a separately approved and sourced task.
 
 P1 is FR-009, optional AI assistance. All P0 acceptance criteria must remain achievable with AI disabled.
 

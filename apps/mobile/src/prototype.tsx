@@ -22,7 +22,7 @@ type DemoRecord = {
   readonly note: string;
   readonly happenedAt: string;
 };
-type DemoLesson = { readonly id: string; readonly title: string; readonly subject: string; readonly focus: string; readonly duration: string; readonly description: string; readonly steps: readonly string[] };
+type DemoLesson = { readonly id: string; readonly title: string; readonly subject: string; readonly strand: string; readonly focus: string; readonly learningGoal: string; readonly materials: readonly string[]; readonly adaptation: string; readonly duration: string; readonly description: string; readonly steps: readonly string[]; readonly provenance: string; readonly version: string; readonly reviewStatus: string };
 
 const learners: readonly DemoLearner[] = ['Ava', 'Leo'];
 const subjects = ['Literacy', 'Mathematics', 'Nature study', 'Creative arts', 'Movement'];
@@ -46,20 +46,31 @@ const subjectColors: Record<string, string> = {
   'Creative arts': '#b18b68',
   Movement: '#82a8a0',
 };
-const learningLevels = ['K', ...Array.from({ length: 12 }, (_, index) => String(index + 1))];
-const lessonSubjects = ['English', 'Mathematics', 'Science', 'History & geography', 'Arts', 'Health & PE', 'Technology & design', 'Languages', 'Financial literacy', 'Environment', 'Family-defined'];
+const learningLevels = ['Kindergarten', ...Array.from({ length: 12 }, (_, index) => `Year ${index + 1}`)];
+const lessonSubjects = ['English', 'Mathematics', 'Science', 'Humanities & social sciences', 'Technologies', 'The arts', 'Health & physical education', 'Languages', 'Cross-curricular', 'Family-defined'];
+const lessonCoverageExamples = [
+  { subject: 'English', strand: 'Reading & writing', scope: 6, drafted: 3, reviewed: 0, status: 'Drafting' },
+  { subject: 'Mathematics', strand: 'Number & patterns', scope: 7, drafted: 4, reviewed: 0, status: 'In review' },
+  { subject: 'Science', strand: 'Inquiry & living systems', scope: 6, drafted: 1, reviewed: 0, status: 'Drafting' },
+  { subject: 'Humanities & social sciences', strand: 'History & geography', scope: 5, drafted: 0, reviewed: 0, status: 'Planned' },
+  { subject: 'Technologies', strand: 'Design & digital technologies', scope: 5, drafted: 0, reviewed: 0, status: 'Planned' },
+  { subject: 'The arts', strand: 'Dance, drama, media, music, visual arts', scope: 6, drafted: 1, reviewed: 0, status: 'Drafting' },
+  { subject: 'Health & physical education', strand: 'Wellbeing & movement', scope: 5, drafted: 0, reviewed: 0, status: 'Planned' },
+  { subject: 'Languages', strand: 'Family-selected languages', scope: 4, drafted: 0, reviewed: 0, status: 'Planned' },
+  { subject: 'Cross-curricular', strand: 'Sustainability, finance, life skills, inquiry', scope: 5, drafted: 0, reviewed: 0, status: 'Planned' },
+];
 const demoLessons: readonly DemoLesson[] = [
-  { id: 'story-shapes', title: 'Stories in shapes', subject: 'English', focus: 'Speaking, listening & storytelling', duration: '30 min', description: 'Notice how a story changes when its setting, character, or point of view changes.', steps: ['Choose a familiar story or make one up together.', 'Draw three shapes to represent a beginning, a change, and an ending.', 'Retell the story and talk about what changed.'] },
-  { id: 'pattern-lab', title: 'Pattern detectives', subject: 'Mathematics', focus: 'Patterns, rules & reasoning', duration: '25 min', description: 'Find a repeating or growing pattern in everyday objects, movement, or sound.', steps: ['Gather a few objects or choose a sound and movement.', 'Build a pattern, then invite your learner to describe its rule.', 'Change one part and discuss how the pattern grows.'] },
-  { id: 'tiny-ecosystems', title: 'A tiny ecosystem', subject: 'Science', focus: 'Living things & interdependence', duration: '40 min', description: 'Explore how living things depend on the conditions and other organisms around them.', steps: ['Observe a small outdoor habitat without disturbing it.', 'Sketch what is living, non-living, and changing.', 'Wonder together: what might happen if one part changed?'] },
-  { id: 'place-stories', title: 'Stories held by a place', subject: 'History & geography', focus: 'Place, memory & change', duration: '35 min', description: 'Use a familiar place to explore how environments and people shape one another over time.', steps: ['Choose a local place, room, or landscape.', 'Map what is there now and what may have been there before.', 'Record questions to investigate with family-approved sources.'] },
-  { id: 'sound-colour', title: 'Sound into colour', subject: 'Arts', focus: 'Creative response & reflection', duration: '30 min', description: 'Translate sounds, music, or environmental noise into a visual composition.', steps: ['Listen to a short soundscape.', 'Choose lines, colours, or textures that match what you hear.', 'Share one choice you made and what inspired it.'] },
-  { id: 'movement-map', title: 'Make a movement map', subject: 'Health & PE', focus: 'Movement, coordination & wellbeing', duration: '20 min', description: 'Create a sequence of movements and notice how the body feels before and after.', steps: ['Pick four safe movements for your space.', 'Arrange them into a sequence and practise at a comfortable pace.', 'Pause, notice breathing and energy, and adapt the sequence.'] },
-  { id: 'design-bridge', title: 'Bridge design challenge', subject: 'Technology & design', focus: 'Design, test & improve', duration: '45 min', description: 'Design a small bridge from reusable materials, then test and improve one feature.', steps: ['Sketch a bridge for a simple family-defined challenge.', 'Build with safe household materials and test gently.', 'Change one feature and compare what happened.'] },
-  { id: 'word-collectors', title: 'A word collection', subject: 'Languages', focus: 'Language, culture & communication', duration: '20 min', description: 'Collect useful words from a language your family is learning and connect each to a real context.', steps: ['Choose a small everyday theme.', 'Gather a few words using a family-approved source or speaker.', 'Use them in a greeting, label, or short exchange.'] },
-  { id: 'market-math', title: 'Plan a pretend market', subject: 'Financial literacy', focus: 'Needs, choices & simple budgets', duration: '35 min', description: 'Use a pretend market to explore choices, quantities, and family-defined spending limits.', steps: ['Set up a pretend stall with reusable objects.', 'Give each object a made-up price.', 'Make a shopping choice and explain the trade-offs.'] },
-  { id: 'water-watch', title: 'Where does the water go?', subject: 'Environment', focus: 'Observation & resource use', duration: '25 min', description: 'Trace a household water use question and identify one practical way to reduce waste.', steps: ['Choose one everyday water use to observe.', 'Draw or describe where the water comes from and goes.', 'Choose a small change to try and revisit later.'] },
-  { id: 'family-interest', title: 'Follow a family question', subject: 'Family-defined', focus: 'Learner-selected inquiry', duration: 'Flexible', description: 'Turn a learner’s own question into a small investigation shaped by your family’s approach.', steps: ['Write down the question in the learner’s words.', 'Choose a way to explore it: make, read, observe, interview, or experiment.', 'Save a reflection or piece of evidence if it feels useful.'] },
+  { id: 'story-shapes', title: 'Stories in shapes', subject: 'English', strand: 'Oral language & literature', focus: 'Speaking, listening & storytelling', learningGoal: 'Retell a story and describe how a character, setting, or viewpoint shapes it.', materials: ['Paper', 'Drawing materials', 'A familiar story (optional)'], adaptation: 'Invite oral retelling and drawing, or compare multiple viewpoints and craft a new ending.', duration: '30 min', description: 'Notice how a story changes when its setting, character, or point of view changes.', steps: ['Choose a familiar story or make one up together.', 'Draw three shapes to represent a beginning, a change, and an ending.', 'Retell the story and talk about what changed.'], provenance: 'Original HomeLearn prototype idea', version: 'Demo 0.2', reviewStatus: 'Illustrative · not reviewed' },
+  { id: 'pattern-lab', title: 'Pattern detectives', subject: 'Mathematics', strand: 'Algebra & patterns', focus: 'Patterns, rules & reasoning', learningGoal: 'Describe a pattern rule and use it to predict what comes next.', materials: ['Household objects, sounds, or movement'], adaptation: 'Start with concrete repeats, or express a growing rule with symbols and justify a prediction.', duration: '25 min', description: 'Find a repeating or growing pattern in everyday objects, movement, or sound.', steps: ['Gather a few objects or choose a sound and movement.', 'Build a pattern, then invite your learner to describe its rule.', 'Change one part and discuss how the pattern grows.'], provenance: 'Original HomeLearn prototype idea', version: 'Demo 0.2', reviewStatus: 'Illustrative · not reviewed' },
+  { id: 'tiny-ecosystems', title: 'A tiny ecosystem', subject: 'Science', strand: 'Biological sciences & inquiry', focus: 'Living things & interdependence', learningGoal: 'Observe relationships between living things and the conditions around them.', materials: ['Notebook or paper', 'Pencil', 'Optional magnifier'], adaptation: 'Draw and name observations, or compare evidence and explain how a change could affect the system.', duration: '40 min', description: 'Explore how living things depend on the conditions and other organisms around them.', steps: ['Observe a small outdoor habitat without disturbing it.', 'Sketch what is living, non-living, and changing.', 'Wonder together: what might happen if one part changed?'], provenance: 'Original HomeLearn prototype idea', version: 'Demo 0.2', reviewStatus: 'Illustrative · not reviewed' },
+  { id: 'place-stories', title: 'Stories held by a place', subject: 'Humanities & social sciences', strand: 'History & geography', focus: 'Place, memory & change', learningGoal: 'Describe how people and environments shape a place over time.', materials: ['Paper', 'Drawing materials', 'A familiar place to observe'], adaptation: 'Map a familiar place, or compare sources and explain changes and differing perspectives.', duration: '35 min', description: 'Use a familiar place to explore how environments and people shape one another over time.', steps: ['Choose a local place, room, or landscape.', 'Map what is there now and what may have been there before.', 'Record questions to investigate with family-approved sources.'], provenance: 'Original HomeLearn prototype idea', version: 'Demo 0.2', reviewStatus: 'Illustrative · not reviewed' },
+  { id: 'sound-colour', title: 'Sound into colour', subject: 'The arts', strand: 'Music & visual arts', focus: 'Creative response & reflection', learningGoal: 'Make and explain a creative response to a sound or musical idea.', materials: ['Paper or reusable materials', 'Drawing materials', 'A soundscape or music (optional)'], adaptation: 'Respond with movement or marks, or compare techniques and explain creative choices.', duration: '30 min', description: 'Translate sounds, music, or environmental noise into a visual composition.', steps: ['Listen to a short soundscape.', 'Choose lines, colours, or textures that match what you hear.', 'Share one choice you made and what inspired it.'], provenance: 'Original HomeLearn prototype idea', version: 'Demo 0.2', reviewStatus: 'Illustrative · not reviewed' },
+  { id: 'movement-map', title: 'Make a movement map', subject: 'Health & physical education', strand: 'Movement & wellbeing', focus: 'Movement, coordination & wellbeing', learningGoal: 'Create a safe movement sequence and notice how the body feels.', materials: ['Clear, safe space', 'Optional music'], adaptation: 'Choose accessible movements, or plan and reflect on how to adapt the sequence for different needs.', duration: '20 min', description: 'Create a sequence of movements and notice how the body feels before and after.', steps: ['Pick four safe movements for your space.', 'Arrange them into a sequence and practise at a comfortable pace.', 'Pause, notice breathing and energy, and adapt the sequence.'], provenance: 'Original HomeLearn prototype idea', version: 'Demo 0.2', reviewStatus: 'Illustrative · not reviewed' },
+  { id: 'design-bridge', title: 'Bridge design challenge', subject: 'Technologies', strand: 'Design & engineering', focus: 'Design, test & improve', learningGoal: 'Test a design against a chosen constraint and explain an improvement.', materials: ['Cardboard or reusable materials', 'Tape', 'Small safe test weights'], adaptation: 'Build and test a simple model, or compare constraints and record evidence for a design revision.', duration: '45 min', description: 'Design a small bridge from reusable materials, then test and improve one feature.', steps: ['Sketch a bridge for a simple family-defined challenge.', 'Build with safe household materials and test gently.', 'Change one feature and compare what happened.'], provenance: 'Original HomeLearn prototype idea', version: 'Demo 0.2', reviewStatus: 'Illustrative · not reviewed' },
+  { id: 'word-collectors', title: 'A word collection', subject: 'Languages', strand: 'Communication & culture', focus: 'Language, culture & communication', learningGoal: 'Use selected words in a meaningful everyday exchange.', materials: ['Notebook or labels', 'Family-approved language source or speaker'], adaptation: 'Practise a few useful words, or compare how meaning changes across context and audience.', duration: '20 min', description: 'Collect useful words from a language your family is learning and connect each to a real context.', steps: ['Choose a small everyday theme.', 'Gather a few words using a family-approved source or speaker.', 'Use them in a greeting, label, or short exchange.'], provenance: 'Original HomeLearn prototype idea', version: 'Demo 0.2', reviewStatus: 'Illustrative · not reviewed' },
+  { id: 'market-math', title: 'Plan a pretend market', subject: 'Cross-curricular', strand: 'Financial literacy', focus: 'Needs, choices & simple budgets', learningGoal: 'Compare choices using quantities and a family-defined spending limit.', materials: ['Reusable household objects', 'Paper price labels', 'Optional counters'], adaptation: 'Make simple choices with counters, or compare budgets and explain trade-offs.', duration: '35 min', description: 'Use a pretend market to explore choices, quantities, and family-defined spending limits.', steps: ['Set up a pretend stall with reusable objects.', 'Give each object a made-up price.', 'Make a shopping choice and explain the trade-offs.'], provenance: 'Original HomeLearn prototype idea', version: 'Demo 0.2', reviewStatus: 'Illustrative · not reviewed' },
+  { id: 'water-watch', title: 'Where does the water go?', subject: 'Cross-curricular', strand: 'Sustainability & environment', focus: 'Observation & resource use', learningGoal: 'Trace an everyday resource-use question and suggest a change to investigate.', materials: ['Notebook or paper', 'Pencil'], adaptation: 'Draw a simple water-use path, or investigate a system and compare evidence for possible changes.', duration: '25 min', description: 'Trace a household water use question and identify one practical way to reduce waste.', steps: ['Choose one everyday water use to observe.', 'Draw or describe where the water comes from and goes.', 'Choose a small change to try and revisit later.'], provenance: 'Original HomeLearn prototype idea', version: 'Demo 0.2', reviewStatus: 'Illustrative · not reviewed' },
+  { id: 'family-interest', title: 'Follow a family question', subject: 'Family-defined', strand: 'Learner-selected inquiry', focus: 'Learner-selected inquiry', learningGoal: 'Explore a learner-chosen question and describe what was discovered.', materials: ['Chosen by the learner and parent for the inquiry'], adaptation: 'Let the learner choose the format and level of support; extend through independent research or making.', duration: 'Flexible', description: 'Turn a learner’s own question into a small investigation shaped by your family’s approach.', steps: ['Write down the question in the learner’s words.', 'Choose a way to explore it: make, read, observe, interview, or experiment.', 'Save a reflection or piece of evidence if it feels useful.'], provenance: 'Original HomeLearn prototype idea', version: 'Demo 0.2', reviewStatus: 'Illustrative · not reviewed' },
 ];
 
 function startOfWeek(date: Date): Date {
@@ -146,7 +157,8 @@ export function HomeLearnPrototype({ onOpenApi }: { readonly onOpenApi: () => vo
   const [selectedDay, setSelectedDay] = useState(() => new Date().getDay() === 0 ? 6 : new Date().getDay() - 1);
   const [activities, setActivities] = useState<readonly DemoActivity[]>(initialActivities);
   const [records, setRecords] = useState<readonly DemoRecord[]>(initialRecords);
-  const [selectedLevel, setSelectedLevel] = useState('K');
+  const [selectedLevel, setSelectedLevel] = useState('Kindergarten');
+  const [lessonCatalogueView, setLessonCatalogueView] = useState<'Browse' | 'Coverage'>('Browse');
   const [selectedLessonSubject, setSelectedLessonSubject] = useState('All subjects');
   const [lessonSearch, setLessonSearch] = useState('');
   const [selectedLesson, setSelectedLesson] = useState<DemoLesson | null>(null);
@@ -300,6 +312,8 @@ export function HomeLearnPrototype({ onOpenApi }: { readonly onOpenApi: () => vo
       {activeTab === 'lessons' ? <LessonsTab
         selectedLevel={selectedLevel}
         onSelectLevel={setSelectedLevel}
+        view={lessonCatalogueView}
+        onSelectView={setLessonCatalogueView}
         selectedSubject={selectedLessonSubject}
         onSelectSubject={setSelectedLessonSubject}
         search={lessonSearch}
@@ -343,12 +357,18 @@ export function HomeLearnPrototype({ onOpenApi }: { readonly onOpenApi: () => vo
         {selectedLesson ? <View style={styles.sheet}>
           <View style={styles.sheetHandle} />
           <View style={styles.sheetHeading}><Text accessibilityRole="header" style={styles.sheetTitle}>{selectedLesson.title}</Text><Pressable accessibilityRole="button" accessibilityLabel="Close lesson preview" onPress={() => setSelectedLesson(null)}><Text style={styles.sheetClose}>×</Text></Pressable></View>
-          <Text style={styles.lessonTag}>{selectedLesson.subject.toUpperCase()} · LEVEL {selectedLevel}</Text>
-          <Text style={styles.formHelper}>{selectedLesson.description}</Text>
-          <Text style={styles.formLabel}>LEARNING FOCUS</Text><Text style={styles.lessonBody}>{selectedLesson.focus}</Text>
-          <Text style={styles.formLabel}>TRY IT TOGETHER</Text>
-          {selectedLesson.steps.map((step, index) => <View key={step} style={styles.lessonStep}><Text style={styles.lessonStepNumber}>{index + 1}</Text><Text style={styles.lessonBody}>{step}</Text></View>)}
-          <View style={styles.separationNote}><Text style={styles.separationIcon}>✳</Text><Text style={styles.separationText}>Original sample idea. Adapt it to your learner; no official syllabus mapping is claimed.</Text></View>
+          <ScrollView style={styles.lessonPreviewScroll} contentContainerStyle={styles.lessonPreviewContent} showsVerticalScrollIndicator={false}>
+            <Text style={styles.lessonTag}>{selectedLesson.subject.toUpperCase()} · {selectedLesson.strand.toUpperCase()} · {selectedLevel.toUpperCase()}</Text>
+            <Text style={styles.formHelper}>{selectedLesson.description}</Text>
+            <Text style={styles.formLabel}>LEARNING GOAL</Text><Text style={styles.lessonBody}>{selectedLesson.learningGoal}</Text>
+            <Text style={styles.formLabel}>ESTIMATED TIME</Text><Text style={styles.lessonBody}>{selectedLesson.duration}</Text>
+            <Text style={styles.formLabel}>MATERIALS</Text><Text style={styles.lessonBody}>{selectedLesson.materials.join(' · ')}</Text>
+            <Text style={styles.formLabel}>TRY IT TOGETHER</Text>
+            {selectedLesson.steps.map((step, index) => <View key={step} style={styles.lessonStep}><Text style={styles.lessonStepNumber}>{index + 1}</Text><Text style={styles.lessonBody}>{step}</Text></View>)}
+            <Text style={styles.formLabel}>ADAPT FOR THIS LEARNER</Text><Text style={styles.lessonBody}>{selectedLesson.adaptation}</Text>
+            <Text style={styles.lessonProvenance}>{selectedLesson.provenance} · {selectedLesson.version} · {selectedLesson.reviewStatus}</Text>
+            <View style={styles.separationNote}><Text style={styles.separationIcon}>✳</Text><Text style={styles.separationText}>Prototype idea only. Jurisdiction-specific syllabus references are deferred; this content has not been reviewed for K–12 coverage.</Text></View>
+          </ScrollView>
           <Pressable accessibilityRole="button" onPress={() => addLessonToPlan(selectedLesson)} style={styles.primaryButton}><Text style={styles.primaryButtonText}>Add lesson to this week</Text></Pressable>
         </View> : null}
       </View>
@@ -465,9 +485,11 @@ function PlannerTab({ weekDays, selectedDay, selectedDate, onChooseDay, learnerF
   </View>;
 }
 
-function LessonsTab({ selectedLevel, onSelectLevel, selectedSubject, onSelectSubject, search, onSearch, lessons, customSubjects, customSubject, onCustomSubjectChange, onAddCustomSubject, onOpenLesson }: {
+function LessonsTab({ selectedLevel, onSelectLevel, view, onSelectView, selectedSubject, onSelectSubject, search, onSearch, lessons, customSubjects, customSubject, onCustomSubjectChange, onAddCustomSubject, onOpenLesson }: {
   readonly selectedLevel: string;
   readonly onSelectLevel: (value: string) => void;
+  readonly view: 'Browse' | 'Coverage';
+  readonly onSelectView: (value: 'Browse' | 'Coverage') => void;
   readonly selectedSubject: string;
   readonly onSelectSubject: (value: string) => void;
   readonly search: string;
@@ -482,26 +504,42 @@ function LessonsTab({ selectedLevel, onSelectLevel, selectedSubject, onSelectSub
   const subjectOptions = ['All subjects', ...lessonSubjects, ...customSubjects];
   return <View>
     <View style={styles.pageTitleRow}><View><Text style={styles.eyebrow}>A LIBRARY THAT GROWS WITH YOU</Text><Text accessibilityRole="header" style={styles.pageTitle}>Lessons</Text></View><View style={styles.progressFlower}><Text style={styles.progressFlowerText}>✳</Text></View></View>
-    <Text style={styles.greetingSub}>Explore ideas from kindergarten through Year 12, across the subjects your family chooses.</Text>
+    <Text style={styles.greetingSub}>Browse Kindergarten through Year 12, across the learning areas your family chooses.</Text>
     <View style={styles.lessonBanner}><Text style={styles.lessonBannerTitle}>Find a place to begin</Text><Text style={styles.lessonBannerText}>Browse by level and learning area. Use a lesson as written, adapt it, or simply follow the question it sparks.</Text></View>
     <Text style={styles.formLabel}>LEARNING LEVEL</Text>
     <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.choiceRow}>
-      {learningLevels.map(level => <Chip key={level} label={level === 'K' ? 'K' : level} selected={selectedLevel === level} onPress={() => onSelectLevel(level)} />)}
+      {learningLevels.map(level => <Chip key={level} label={level === 'Kindergarten' ? 'Kindergarten' : level.replace('Year ', 'Yr ')} selected={selectedLevel === level} onPress={() => onSelectLevel(level)} />)}
     </ScrollView>
+    <View style={styles.catalogueViewToggle}>{(['Browse', 'Coverage'] as const).map(option => <Pressable key={option} accessibilityRole="button" accessibilityState={{ selected: view === option }} onPress={() => onSelectView(option)} style={[styles.catalogueViewOption, view === option && styles.catalogueViewOptionSelected]}><Text style={[styles.catalogueViewText, view === option && styles.catalogueViewTextSelected]}>{option === 'Coverage' ? 'Review coverage' : option + ' lessons'}</Text></Pressable>)}</View>
+    {view === 'Coverage' ? <CoverageView level={selectedLevel} /> : <>
     <TextInput accessibilityLabel="Search lesson ideas" placeholder="Search lessons or learning goals" value={search} onChangeText={onSearch} style={styles.formInput} />
     <Text style={styles.formLabel}>SUBJECTS</Text>
     <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.choiceRow}>
       {subjectOptions.map(subject => <Chip key={subject} label={subject} selected={selectedSubject === subject} onPress={() => onSelectSubject(subject)} />)}
     </ScrollView>
-    <View style={styles.catalogNote}><Text style={styles.catalogNoteIcon}>⌑</Text><Text style={styles.catalogNoteText}>Sample ideas are original and illustrative. Official syllabus references will be shown separately with their jurisdiction, version and source.</Text></View>
+    <View style={styles.catalogNote}><Text style={styles.catalogNoteIcon}>⌑</Text><Text style={styles.catalogNoteText}>Sample ideas are original and illustrative. NSW syllabus references are deferred and are not included here.</Text></View>
     <SectionHeading title="Ideas to explore" />
     {lessons.length === 0 ? <View style={styles.emptyCard}><Text style={styles.emptyText}>No matching lesson ideas yet.</Text><Text style={styles.formHelper}>Try another subject or search term.</Text></View> : lessons.map(lesson => <Pressable accessibilityRole="button" key={lesson.id} onPress={() => onOpenLesson(lesson)} style={styles.lessonCard}>
-      <View style={styles.lessonCardTop}><Text style={styles.lessonTag}>{lesson.subject.toUpperCase()}</Text><Text style={styles.lessonDuration}>{lesson.duration}</Text></View>
+      <View style={styles.lessonCardTop}><Text style={styles.lessonTag}>{lesson.subject.toUpperCase()} · {lesson.strand.toUpperCase()}</Text><Text style={styles.lessonDuration}>{lesson.duration}</Text></View>
       <Text style={styles.lessonTitle}>{lesson.title}</Text><Text style={styles.lessonFocus}>{lesson.focus}</Text>
-      <View style={styles.lessonCardBottom}><Text style={styles.lessonLevel}>Showing level {selectedLevel} · adaptable idea</Text><Text style={styles.lessonArrow}>›</Text></View>
+      <View style={styles.lessonCardBottom}><Text style={styles.lessonLevel}>Selected level · {selectedLevel}</Text><Text style={styles.lessonArrow}>›</Text></View>
     </Pressable>)}
     <SectionHeading title="Make it yours" />
     <View style={styles.customSubjectCard}><Text style={styles.lessonTitle}>Add a family subject</Text><Text style={styles.formHelper}>Create a learning area that reflects your family’s curriculum or interests.</Text><View style={styles.customSubjectRow}><TextInput accessibilityLabel="Family-defined subject name" placeholder="e.g. Bush skills" value={customSubject} onChangeText={onCustomSubjectChange} style={[styles.formInput, styles.customSubjectInput]} /><Pressable accessibilityRole="button" onPress={onAddCustomSubject} style={styles.customSubjectButton}><Text style={styles.customSubjectButtonText}>Add</Text></Pressable></View>{customSubjects.length > 0 ? <Text style={styles.customSubjectList}>Your subjects · {customSubjects.join(' · ')}</Text> : null}</View>
+    </>}
+  </View>;
+}
+
+function CoverageView({ level }: { readonly level: string }) {
+  return <View>
+    <View style={styles.coverageNotice}><Text style={styles.coverageNoticeTitle}>Coverage for {level}</Text><Text style={styles.catalogNoteText}>Illustrative tracker only. No sample lesson has been editorially reviewed and no level is marked complete.</Text></View>
+    {lessonCoverageExamples.map(item => <View key={item.subject} style={styles.coverageCard}>
+      <View style={styles.coverageCardTop}><Text style={styles.lessonTitle}>{item.subject}</Text><Text style={[styles.coverageStatus, item.status === 'In review' && styles.coverageStatusReview]}>{item.status}</Text></View>
+      <Text style={styles.lessonFocus}>{item.strand}</Text>
+      <View style={styles.coverageCounts}><Text style={styles.lessonLevel}>{item.drafted} of {item.scope} scope items drafted</Text><Text style={styles.lessonLevel}>{item.reviewed} reviewed</Text></View>
+      <View style={styles.progressAreaTrack}><View style={[styles.progressAreaFill, { width: `${Math.round((item.drafted / item.scope) * 100)}%`, backgroundColor: item.status === 'In review' ? '#b18b68' : '#73937a' }]} /></View>
+    </View>)}
+    <View style={styles.catalogNote}><Text style={styles.catalogNoteIcon}>◎</Text><Text style={styles.catalogNoteText}>“Available” will mean at least one reviewed lesson for a level and topic. “Complete to defined scope” requires every topic target in the versioned content plan to pass review.</Text></View>
   </View>;
 }
 
@@ -703,6 +741,21 @@ const styles = StyleSheet.create({
   customSubjectButton: { backgroundColor: '#315b4a', borderRadius: 11, paddingHorizontal: 15, alignItems: 'center', justifyContent: 'center' },
   customSubjectButtonText: { color: '#fff', fontSize: 11, fontWeight: '700' },
   customSubjectList: { color: '#78907c', fontSize: 9, marginTop: 9 },
+  catalogueViewToggle: { flexDirection: 'row', backgroundColor: '#eceee7', borderRadius: 12, padding: 3, marginTop: 10, marginBottom: 14 },
+  catalogueViewOption: { flex: 1, alignItems: 'center', borderRadius: 9, paddingVertical: 9 },
+  catalogueViewOptionSelected: { backgroundColor: '#fff' },
+  catalogueViewText: { color: '#879187', fontSize: 10, fontWeight: '600' },
+  catalogueViewTextSelected: { color: '#36594b' },
+  coverageNotice: { backgroundColor: '#f0e9dd', borderRadius: 14, padding: 13, marginBottom: 12 },
+  coverageNoticeTitle: { color: '#635440', fontFamily: 'Georgia', fontSize: 16, fontWeight: '600', marginBottom: 5 },
+  coverageCard: { backgroundColor: '#fff', borderRadius: 14, borderWidth: 1, borderColor: '#ebede5', padding: 12, marginBottom: 8 },
+  coverageCardTop: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 8 },
+  coverageStatus: { color: '#987e5e', backgroundColor: '#f6f0e8', borderRadius: 8, overflow: 'hidden', paddingHorizontal: 8, paddingVertical: 5, fontSize: 8, fontWeight: '800' },
+  coverageStatusReview: { color: '#6f7657', backgroundColor: '#edf1e5' },
+  coverageCounts: { flexDirection: 'row', justifyContent: 'space-between', marginTop: 8 },
+  lessonPreviewScroll: { flexGrow: 0, maxHeight: '70%' },
+  lessonPreviewContent: { gap: 8, paddingBottom: 8 },
+  lessonProvenance: { color: '#8a9589', fontSize: 9, lineHeight: 14, marginTop: 5 },
   roundAdd: { width: 38, height: 38, borderRadius: 12, backgroundColor: '#315b4a', alignItems: 'center', justifyContent: 'center' },
   roundAddText: { color: '#fff', fontSize: 22, lineHeight: 25 },
   weekRange: { color: '#89938a', fontSize: 11, marginBottom: 17 },

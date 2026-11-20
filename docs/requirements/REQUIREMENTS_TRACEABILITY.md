@@ -11,7 +11,7 @@ Status: Updated 20 November 2026. Current verified and partial outcomes are reco
 | FR-005 | AC-007–008 | Learning records | Domain/application/E2E |
 | FR-006 | AC-009–010, AC-013 | Evidence | Real storage integration/security |
 | FR-007 | AC-011, AC-013 | Reporting | Authorisation, PDF content/layout checks |
-| FR-008 | AC-012 | Curriculum/planning templates | Provenance and educational review |
+| FR-008 | AC-012 | Curriculum/content catalogue/planning templates | Subject/strand/level coverage, provenance and editorial review |
 | FR-009 | AC-016 | Optional AI | Adapter validation and approval tests |
 | NFR-001–002 | AC-013–014 | All | Isolation and log inspection |
 | NFR-003 | Quality gates | All | Oxlint, typecheck, boundary checker, build |
@@ -36,3 +36,5 @@ Historical 20 November 2026 status before HL-004B persistence work: curriculum d
 FR-004 PARTIAL: plan/activity API and scheduling history are persisted through Prisma/PostgreSQL. FR-005 PARTIAL: spontaneous experiences, separate learner records and explicit assessments are persisted. These routes run on the loopback-only development API and use synthetic local family/learner IDs; authentication and family ownership are deferred, so production/network exposure is prohibited.
 
 The default Expo view is an interactive, fictional sample-data prototype for Home, Planner, Journal and Progress; its sample edits remain in screen state only. The existing “Local API” view reads plans, activities, experiences, learning records and assessments from the local API and supports plan/activity authoring, observation updates and explicit assessments. Mobile/API behavior has synthetic-fixture coverage; the Prisma-backed API flow has an opt-in PostgreSQL integration test. Offline operation and real-device acceptance remain NOT_STARTED. Evidence/portfolio and authentication/family ownership remain DEFERRED by user direction. See [HL-004C](../changes/HL-004C-planning-learning-workflows.md) and [the interactive prototype record](../changes/planning-learning-visual-prototype.md).
+
+FR-008 design update: subject/strand taxonomy, Kindergarten–Year 12 labels, standard lesson fields, review lifecycle and explicit coverage semantics are specified in [LESSON_CATALOGUE_PLAN.md](LESSON_CATALOGUE_PLAN.md). The Lessons prototype shows sample fields and an illustrative tracker only; no production lesson content is reviewed or persisted. NSW mappings, catalogue persistence/authoring and the complete original content corpus remain deferred under HL-011–HL-013.
