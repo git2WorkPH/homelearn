@@ -60,3 +60,83 @@ model CurriculumLearnerGoal {
   @@unique([learnerId, outcomeId])
   @@index([learnerId, createdAt])
 }
+
+model LearningPlan {
+  id        String     @id @db.VarChar(200)
+  familyId  String     @db.VarChar(200)
+  title     String     @db.VarChar(300)
+  startsOn  DateTime   @db.Date
+  endsOn    DateTime   @db.Date
+  status    String     @db.VarChar(20)
+  createdAt DateTime   @default(now()) @db.Timestamptz(3)
+  activities Activity[]
+  @@index([familyId, startsOn])
+}
+
+model Activity {
+  id          String              @id @db.VarChar(200)
+  familyId    String              @db.VarChar(200)
+  planId      String              @db.VarChar(200)
+  title       String              @db.VarChar(500)
+  schedule    Json?
+  createdAt   DateTime            @default(now()) @db.Timestamptz(3)
+  plan        LearningPlan        @relation(fields: [planId], references: [id], onDelete: Restrict)
+  assignments ActivityAssignment[]
+  revisions   ActivityScheduleRevision[]
+  @@index([familyId, planId])
+}
+
+model ActivityAssignment {
+  activityId String   @db.VarChar(200)
+  learnerId  String   @db.VarChar(200)
+  activity   Activity @relation(fields: [activityId], references: [id], onDelete: Restrict)
+  @@id([activityId, learnerId])
+  @@index([learnerId])
+}
+
+model ActivityScheduleRevision {
+  id          String   @id @db.VarChar(200)
+  activityId  String   @db.VarChar(200)
+  previous    Json?
+  next        Json?
+  changedAt   DateTime @db.Timestamptz(3)
+  changedBy   String   @db.VarChar(200)
+  activity    Activity @relation(fields: [activityId], references: [id], onDelete: Restrict)
+  @@index([activityId, changedAt])
+}
+
+model LearningExperience {
+  id        String                 @id @db.VarChar(200)
+  familyId  String                 @db.VarChar(200)
+  happenedAt DateTime              @db.Timestamptz(3)
+  activityId String?               @db.VarChar(200)
+  title     String                 @db.VarChar(500)
+  records   LearnerLearningRecord[]
+  @@index([familyId, happenedAt])
+}
+
+model LearnerLearningRecord {
+  id                   String             @id @db.VarChar(200)
+  experienceId         String             @db.VarChar(200)
+  learnerId             String             @db.VarChar(200)
+  observation           String?            @db.Text
+  completed             Boolean
+  curriculumVersionId   String?            @db.VarChar(240)
+  configurationSnapshot Json?
+  experience            LearningExperience @relation(fields: [experienceId], references: [id], onDelete: Restrict)
+  assessments           OutcomeAssessment[]
+  @@unique([experienceId, learnerId])
+  @@index([learnerId])
+}
+
+model OutcomeAssessment {
+  id               String                @id @db.VarChar(200)
+  learnerRecordId  String                @db.VarChar(200)
+  outcomeId        String                @db.VarChar(300)
+  assessedAt       DateTime              @db.Timestamptz(3)
+  assessedBy       String                @db.VarChar(200)
+  judgement        String                @db.VarChar(30)
+  rationale        String?               @db.Text
+  learnerRecord   LearnerLearningRecord  @relation(fields: [learnerRecordId], references: [id], onDelete: Restrict)
+  @@index([learnerRecordId, assessedAt])
+}

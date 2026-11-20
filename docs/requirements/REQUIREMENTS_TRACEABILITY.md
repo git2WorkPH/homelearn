@@ -1,6 +1,6 @@
 # Requirements traceability
 
-Status: Draft. Implementation is absent; every row is NOT_STARTED and verification NOT RUN.
+Status: Updated 20 November 2026. Current verified and partial outcomes are recorded below; pending and deferred criteria remain explicit.
 
 | Requirement | Acceptance | Owning modules | Planned verification |
 |---|---|---|---|
@@ -29,3 +29,10 @@ Add implementation paths and evidence links as milestones are delivered; never p
 FR-002 is PARTIAL: configuration domain only. AC-004 domain precedence/clearing/reference/conflict cases pass in apps/api/test/learning-configuration.test.ts. NFR-006 snapshot detachment is tested; persisted historical records remain NOT_STARTED. All onboarding, authenticated API and UI criteria remain unverified. Foundation NFR-003 checks pass for current sources. See [HL-003A](../changes/HL-003A-configuration-domain.md) for scope and commands.
 
 20 November 2026 update: curriculum domain and local API behavior are covered by 27 passing API tests in aggregate. Prisma schema validation/client generation pass, but persistence acceptance is NOT RUN and remains incomplete. Planning domain behavior tests pass; plan persistence/API remains NOT_STARTED. Full workspace lint, typecheck, tests, dependency boundaries and build passed at the final local verification.
+
+
+## Planning and learning update — 20 November 2026
+
+FR-004 PARTIAL: plan/activity API and scheduling history are persisted through Prisma/PostgreSQL. FR-005 PARTIAL: spontaneous experiences, separate learner records and explicit assessments are persisted. These routes run on the loopback-only development API and use synthetic local family/learner IDs; authentication and family ownership are deferred, so production/network exposure is prohibited.
+
+The Expo screen reads plans, activities and learning records from the local API and can create a plan and spontaneous learning record. Activity authoring, observations editing, assessment UI, offline operation and real-device acceptance remain NOT_STARTED. Database migration is applied to the local homelearn database. Evidence/portfolio and authentication remain DEFERRED by user direction.
