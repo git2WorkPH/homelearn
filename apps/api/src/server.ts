@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { buildApp } from "./app.js";
-import { createPrismaClient } from './lib/prisma.js';
+import { createPrismaClient } from "./lib/prisma.js";
 const config = z
   .object({
     PORT: z.coerce.number().int().min(1).max(65535).default(3000),
@@ -12,9 +12,12 @@ const prisma = createPrismaClient(config.DATABASE_URL);
 const app = buildApp({ prisma });
 for (const signal of ["SIGINT", "SIGTERM"] as const) {
   process.once(signal, () => {
-    void app.close().finally(() => prisma.$disconnect()).catch(() => {
-      process.exitCode = 1;
-    });
+    void app
+      .close()
+      .finally(() => prisma.$disconnect())
+      .catch(() => {
+        process.exitCode = 1;
+      });
   });
 }
 try {
