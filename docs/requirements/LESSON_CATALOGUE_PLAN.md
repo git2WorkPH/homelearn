@@ -40,6 +40,17 @@ Every published lesson version contains:
 
 Lesson completion creates or updates a planned activity/learning record only. It never creates an outcome mastery judgement. Family edits create a family-owned adaptation linked to the source version; they do not mutate shared published content.
 
+### Using lessons through family experiences
+
+Support two parent-controlled starting points:
+
+1. **Lesson first:** choose a K–12 lesson, enter a real family activity or context where it can be explored, assign learners and schedule it. The planned activity retains a link to the exact lesson version. The family can change the activity without changing the shared lesson.
+2. **Experience first:** record a family experience such as cooking, a visit, making or a learner's question. The parent may search the catalogue and explicitly link one or more relevant lesson versions to the learner's record. Suggestions never apply a link automatically.
+
+When a planned family activity is logged, carry its lesson-version link into the resulting learning record. Actual observations remain separate from the plan; linking an experience to a lesson does not claim the lesson was fully completed or that an outcome was demonstrated. Support unplanned experiences and records with no lesson link.
+
+The local API workflow now supports family-authored, immutable lesson versions with structured subject, strand, learning level, goal, success criteria, materials, steps, adaptation and duration. A parent may also request a local AI draft for those fields; generated text is labelled, validated, remains unsaved until reviewed, and requires explicit approval before it becomes a family lesson. Saved lesson versions can be linked to planned activities and learning records. This is family content, not a reviewed shared K–12 catalogue, and it carries no official syllabus mapping.
+
 ## 3. Editorial review and coverage
 
 ### Review lifecycle
@@ -68,4 +79,4 @@ The full K–12 catalogue remains a substantial authoring and review programme. 
 
 ## 4. Deferred work
 
-Tracked in [MVP backlog](../planning/MVP_BACKLOG.md): persistent taxonomy/content-pack/lesson-version model and authoring/coverage workflows; original lesson authoring and review across the approved subject/level scope; and later NSW syllabus source verification and mapping. These are not implemented by this design/prototype change.
+Tracked in [MVP backlog](../planning/MVP_BACKLOG.md): shared taxonomy/content packs, new-version editing workflow, multi-lesson associations, editorial review/coverage tools, and original reviewed content across the approved subject/level scope. NSW syllabus source verification and mapping remain deferred. The current family lesson authoring and local AI draft workflow does not imply the full K–12 catalogue is available or complete.

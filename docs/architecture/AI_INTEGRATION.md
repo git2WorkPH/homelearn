@@ -1,10 +1,10 @@
 # Optional AI integration
 
-Status: Proposed P1; excluded from core implementation milestones.
+Status: Optional local lesson drafting is implemented behind a provider port; Ollama is the current local adapter. AI is not required by the core flow.
 
-An application provider port accepts a minimal, explicit suggestion request and returns structured untrusted output. Ollama is an initial candidate adapter. Core domain modules do not import provider SDKs or require a provider to start.
+The lesson draft provider accepts only subject, strand, learning level, topic and optional teaching notes. The Ollama adapter is restricted to a loopback HTTP URL and uses the local `/api/generate` endpoint. Core domain modules do not import provider SDKs or require a provider to start.
 
-Suggestions may propose plans, activities, teaching explanations, differentiation or summaries. Store provider/model provenance where available and label generated content. Validate schemas and referenced goals; reject invented official mappings. Never claim curriculum compliance.
+Lesson suggestions are structured untrusted drafts. The API validates the generated schema and stores provider/model provenance; the mobile workflow labels the draft and requires explicit parent approval before saving. It does not receive learner profiles or learning records, and it cannot autonomously modify activities or records. No official mapping or curriculum compliance claim is accepted from generated text.
 
 Lifecycle: generated draft → parent edited/reviewed → approved or rejected. Activation invokes the normal authorised use case after explicit approval. Approval applies to the reviewed version; subsequent edits require renewed review. No autonomous learning-record writes.
 

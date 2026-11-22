@@ -1,10 +1,10 @@
 # API design
 
-Status: Proposed contract conventions, not implemented endpoints.
+Status: Contract conventions; lesson-version creation/draft routes and planning/learning lesson references are implemented in the local API by this change. Authentication remains deferred.
 
 Fastify presentation validates Zod requests, resolves authenticated actor context, invokes use cases and maps typed errors. Domain invariants remain independently enforced. A family identifier in a URL never proves membership.
 
-Proposed resource groups under /api/v1: families, learners, curriculum-versions, learner-goals, configurations, plans, activities, learning-records, assessments, evidence and exports. Family-owned routes are nested under /families/:familyId. Provider-specific authentication routes remain undecided.
+Resource groups under /api/v1 include lesson-versions, lesson-drafts, plans, activities, learning-experiences, learner-records and assessments; families, learners, evidence and exports remain proposed. `GET /lesson-versions?familyId=...` and `POST /lesson-versions` list/create immutable family lesson versions. `POST /lesson-drafts` returns a validated but unsaved optional local AI draft. Activities and learner records may reference a lesson version. Provider-specific authentication routes remain undecided.
 
 Key operations include CreateFamily, ResolveLearningConfiguration, CreateLearningPlan, RescheduleActivity, RecordLearningExperience, RecordOutcomeAssessment, InitiateEvidenceUpload, FinaliseEvidenceUpload and ExportLearningSummary.
 

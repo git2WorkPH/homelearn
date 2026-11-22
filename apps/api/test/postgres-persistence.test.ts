@@ -19,18 +19,28 @@ postgresTest('persists planning, schedule history, observations, and assessments
   const experienceId = `test-experience-${suffix}`;
   const recordId = `test-record-${suffix}`;
   const assessmentId = `test-assessment-${suffix}`;
+  const lessonVersionId = `test-lesson-v1-${suffix}`;
 
   try {
+    const lessonResponse = await app.inject({ method: 'POST', url: '/api/v1/lesson-versions', payload: {
+      id: lessonVersionId, lessonKey: `test-lesson-${suffix}`, familyId, versionLabel: '1.0',
+      title: 'Synthetic family lesson', subject: 'Science', strand: 'Inquiry', learningLevel: 'Year 2',
+      learningGoal: 'Observe a safe outdoor change.', successCriteria: ['Describe one observation'],
+      materials: ['Paper'], steps: ['Observe', 'Record'], creationMethod: 'manual',
+    } });
+    expect(lessonResponse.statusCode).toBe(201);
+
     const planResponse = await app.inject({ method: 'POST', url: '/api/v1/plans', payload: {
       id: planId, familyId, title: 'Synthetic PostgreSQL plan', startsOn: '2026-11-23', endsOn: '2026-11-29', status: 'active',
     } });
     expect(planResponse.statusCode).toBe(201);
 
     const activityResponse = await app.inject({ method: 'POST', url: '/api/v1/activities', payload: {
-      id: activityId, familyId, planId, title: 'Synthetic PostgreSQL activity', learnerIds: [learnerId],
+      id: activityId, familyId, planId, title: 'Synthetic PostgreSQL activity', learnerIds: [learnerId], lessonVersionId,
       schedule: { startsAt: '2026-11-24T01:00:00Z', endsAt: '2026-11-24T02:00:00Z', timeZone: 'Australia/Sydney' },
     } });
     expect(activityResponse.statusCode).toBe(201);
+    expect(activityResponse.json()).toMatchObject({ lessonVersionId });
 
     const rescheduledResponse = await app.inject({ method: 'POST', url: `/api/v1/activities/${activityId}/reschedule`, payload: {
       changedAt: '2026-11-20T00:00:00Z', changedBy: 'test-adult',
@@ -52,10 +62,11 @@ postgresTest('persists planning, schedule history, observations, and assessments
     } });
     expect(experienceResponse.statusCode).toBe(201);
     const recordResponse = await app.inject({ method: 'POST', url: '/api/v1/learner-records', payload: {
-      id: recordId, experienceId, learnerId, completed: false,
+      id: recordId, experienceId, learnerId, completed: false, lessonVersionId,
       curriculumVersionId: 'family-defined:synthetic-v1', configurationSnapshot: { sourceKind: 'family-defined' },
     } });
     expect(recordResponse.statusCode).toBe(201);
+    expect(recordResponse.json()).toMatchObject({ lessonVersionId });
 
     const observationResponse = await app.inject({ method: 'PATCH', url: `/api/v1/learner-records/${recordId}`, payload: {
       observation: 'Synthetic observation for persistence verification',
@@ -79,6 +90,7 @@ postgresTest('persists planning, schedule history, observations, and assessments
     await prisma.activityAssignment.deleteMany({ where: { activityId } });
     await prisma.activity.deleteMany({ where: { id: activityId } });
     await prisma.learningPlan.deleteMany({ where: { id: planId } });
+    await prisma.lessonVersion.deleteMany({ where: { id: lessonVersionId } });
     await prisma.$disconnect();
   }
 }, 30_000);

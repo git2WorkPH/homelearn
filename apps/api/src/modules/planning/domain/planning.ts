@@ -14,6 +14,8 @@ export interface Activity {
   readonly familyId: string;
   readonly planId: string;
   readonly title: string;
+  /** Stable catalogue version reference, e.g. story-shapes@demo-0.2. */
+  readonly lessonVersionId?: string;
   readonly learnerIds: readonly string[];
   readonly schedule?: Schedule;
   readonly scheduleHistory: readonly ScheduleRevision[];
@@ -37,6 +39,7 @@ export function createLearningPlan(input: LearningPlan): LearningPlan {
 }
 export function createActivity(input: Omit<Activity, 'scheduleHistory'>): Activity {
   if (![input.id, input.familyId, input.planId, input.title].every(nonEmpty) || input.learnerIds.length === 0 || input.learnerIds.some(id => !nonEmpty(id))) throw new PlanningError('INVALID_ACTIVITY');
+  if (input.lessonVersionId !== undefined && !nonEmpty(input.lessonVersionId)) throw new PlanningError('INVALID_ACTIVITY');
   if (new Set(input.learnerIds).size !== input.learnerIds.length) throw new PlanningError('DUPLICATE_LEARNER');
   if (input.schedule !== undefined) validateSchedule(input.schedule);
   return Object.freeze({ ...input, learnerIds: Object.freeze([...input.learnerIds]), ...(input.schedule === undefined ? {} : { schedule: freezeSchedule(input.schedule) }), scheduleHistory: Object.freeze([]) });
@@ -56,11 +59,18 @@ export function assignActivityToLearners(activity: Activity, learnerIds: readonl
   if (new Set(learnerIds).size !== learnerIds.length) throw new PlanningError('DUPLICATE_LEARNER');
   return Object.freeze({ ...activity, learnerIds: Object.freeze([...learnerIds]) });
 }
-export function editActivity(activity: Activity, changes: { readonly title?: string; readonly learnerIds?: readonly string[] }): Activity {
+export function editActivity(activity: Activity, changes: { readonly title?: string; readonly learnerIds?: readonly string[]; readonly lessonVersionId?: string | null }): Activity {
   const title = changes.title ?? activity.title;
   if (!nonEmpty(title)) throw new PlanningError('INVALID_ACTIVITY');
   const updated = { ...activity, title };
-  return changes.learnerIds === undefined ? Object.freeze(updated) : assignActivityToLearners(updated, changes.learnerIds);
+  if (changes.lessonVersionId !== undefined && changes.lessonVersionId !== null && !nonEmpty(changes.lessonVersionId)) throw new PlanningError('INVALID_ACTIVITY');
+  const withLesson = changes.lessonVersionId === undefined ? updated : changes.lessonVersionId === null ? withoutLessonVersion(updated) : { ...updated, lessonVersionId: changes.lessonVersionId };
+  return changes.learnerIds === undefined ? Object.freeze(withLesson) : assignActivityToLearners(withLesson, changes.learnerIds);
+}
+
+function withoutLessonVersion(activity: Activity): Omit<Activity, 'lessonVersionId'> {
+  const { lessonVersionId: _lessonVersionId, ...withoutLesson } = activity;
+  return withoutLesson;
 }
 export function assignActivityToPlan(activity: Activity, plan: LearningPlan): Activity {
   if (activity.familyId !== plan.familyId) throw new PlanningError('PLAN_FAMILY_MISMATCH');

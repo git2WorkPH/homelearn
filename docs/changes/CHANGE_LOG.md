@@ -1,5 +1,17 @@
 # Change log and justification
 
+## 22 November 2026 — Create lessons and link them with family experiences
+
+Authorization: user asked to implement the lesson/family experience prototype, clarified that HomeLearn should provide its own Chalkie-like lesson creation (no Chalkie connection), selected manual authoring first, then requested AI generation as well.
+
+Changes: add immutable family lesson versions, a structured lesson authoring flow, optional local Ollama draft generation, explicit parent review before AI drafts can be saved, and lesson-version references on activities and learner records. Add an additive Prisma migration and API/mobile coverage. Update lesson, AI, data and requirements documentation. See [change rationale and scope](family-experience-lesson-linking.md).
+
+Rationale: create original HomeLearn lesson content for a parent-led K–12 workflow, then let parents connect a chosen version to a planned activity or observed family experience. Keep plans, experiences and assessments distinct.
+
+Limitations: migration is prepared but not applied; the local API remains unauthenticated and loopback-only. Lesson version editing UI, multi-lesson associations, full K–12 reviewed content corpus, lesson-series/worksheet generation, and NSW mapping remain deferred. AI is local-only and cannot save drafts without parent approval.
+
+Validation: API typecheck/build, mobile typecheck, Oxlint, API Vitest (38 passed; PostgreSQL integration skipped), mobile Jest (4 passed), dependency-boundary check, Prisma generate/validate, iOS Expo export and `git diff --check` pass. The root pnpm build command stalled and was interrupted; direct API TypeScript build succeeded. Database-backed behavior is not verified until the migration is applied.
+
 ## 20 November 2026 — Lesson catalogue structure and deferred backlog
 
 Authorisation: user requested implementing the subject/level definition, lesson template and review/coverage design, deferring NSW references, and recording deferred work for later.

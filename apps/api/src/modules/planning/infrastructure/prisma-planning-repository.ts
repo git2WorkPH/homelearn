@@ -23,7 +23,7 @@ export class PrismaPlanningRepository implements PlanningRepository {
   }
 
   async createActivity(activity: Activity): Promise<Activity> {
-    await this.prisma.activity.create({ data: { id: activity.id, familyId: activity.familyId, planId: activity.planId, title: activity.title, schedule: activity.schedule === undefined ? Prisma.DbNull : { startsAt: activity.schedule.startsAt, endsAt: activity.schedule.endsAt, timeZone: activity.schedule.timeZone }, assignments: { create: activity.learnerIds.map(learnerId => ({ learnerId })) } } });
+    await this.prisma.activity.create({ data: { id: activity.id, familyId: activity.familyId, planId: activity.planId, title: activity.title, lessonVersionId: activity.lessonVersionId ?? null, schedule: activity.schedule === undefined ? Prisma.DbNull : { startsAt: activity.schedule.startsAt, endsAt: activity.schedule.endsAt, timeZone: activity.schedule.timeZone }, assignments: { create: activity.learnerIds.map(learnerId => ({ learnerId })) } } });
     return activity;
   }
 
@@ -41,7 +41,7 @@ export class PrismaPlanningRepository implements PlanningRepository {
     const existing = await this.getActivity(activity.id);
     if (existing === undefined) throw new Error('ACTIVITY_NOT_FOUND');
     await this.prisma.$transaction(async tx => {
-      await tx.activity.update({ where: { id: activity.id }, data: { title: activity.title, schedule: activity.schedule === undefined ? Prisma.DbNull : { startsAt: activity.schedule.startsAt, endsAt: activity.schedule.endsAt, timeZone: activity.schedule.timeZone } } });
+      await tx.activity.update({ where: { id: activity.id }, data: { title: activity.title, lessonVersionId: activity.lessonVersionId ?? null, schedule: activity.schedule === undefined ? Prisma.DbNull : { startsAt: activity.schedule.startsAt, endsAt: activity.schedule.endsAt, timeZone: activity.schedule.timeZone } } });
       await tx.activityAssignment.deleteMany({ where: { activityId: activity.id } });
       await tx.activityAssignment.createMany({ data: activity.learnerIds.map(learnerId => ({ activityId: activity.id, learnerId })) });
       if (revision !== undefined) await tx.activityScheduleRevision.create({ data: { id: randomUUID(), activityId: activity.id, previous: revision.previous === undefined ? Prisma.DbNull : { startsAt: revision.previous.startsAt, endsAt: revision.previous.endsAt, timeZone: revision.previous.timeZone }, next: revision.next === undefined ? Prisma.DbNull : { startsAt: revision.next.startsAt, endsAt: revision.next.endsAt, timeZone: revision.next.timeZone }, changedAt: new Date(revision.changedAt), changedBy: revision.changedBy } });
@@ -49,9 +49,9 @@ export class PrismaPlanningRepository implements PlanningRepository {
     return activity;
   }
 
-  private mapActivity(row: { id: string; familyId: string; planId: string; title: string; schedule: unknown; assignments: readonly { learnerId: string }[]; revisions: readonly { previous: unknown; next: unknown; changedAt: Date; changedBy: string }[] }): Activity {
+  private mapActivity(row: { id: string; familyId: string; planId: string; title: string; lessonVersionId: string | null; schedule: unknown; assignments: readonly { learnerId: string }[]; revisions: readonly { previous: unknown; next: unknown; changedAt: Date; changedBy: string }[] }): Activity {
     const schedule = row.schedule === null ? undefined : row.schedule as Schedule;
     const scheduleHistory: ScheduleRevision[] = row.revisions.map(item => ({ ...(item.previous === null ? {} : { previous: item.previous as Schedule }), ...(item.next === null ? {} : { next: item.next as Schedule }), changedAt: item.changedAt.toISOString(), changedBy: item.changedBy }));
-    return { id: row.id, familyId: row.familyId, planId: row.planId, title: row.title, learnerIds: row.assignments.map(item => item.learnerId), ...(schedule === undefined ? {} : { schedule }), scheduleHistory };
+    return { id: row.id, familyId: row.familyId, planId: row.planId, title: row.title, learnerIds: row.assignments.map(item => item.learnerId), ...(row.lessonVersionId === null ? {} : { lessonVersionId: row.lessonVersionId }), ...(schedule === undefined ? {} : { schedule }), scheduleHistory };
   }
 }

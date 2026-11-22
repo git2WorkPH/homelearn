@@ -12,6 +12,8 @@ export interface LearnerLearningRecord {
   readonly learnerId: string;
   readonly observation?: string;
   readonly completed: boolean;
+  /** Stable catalogue version reference, e.g. story-shapes@demo-0.2. */
+  readonly lessonVersionId?: string;
   readonly curriculumVersionId?: string;
   readonly configurationSnapshot?: Readonly<Record<string, unknown>>;
 }
@@ -58,7 +60,7 @@ export function recordLearningExperience(input: LearningExperience): LearningExp
 }
 
 export function recordLearnerParticipation(input: LearnerLearningRecord, experience: LearningExperience): LearnerLearningRecord {
-  if (![input.id, input.experienceId, input.learnerId].every(nonEmpty) || input.experienceId !== experience.id || typeof input.completed !== 'boolean' || (input.observation !== undefined && !nonEmpty(input.observation)) || ((input.curriculumVersionId === undefined) !== (input.configurationSnapshot === undefined))) {
+  if (![input.id, input.experienceId, input.learnerId].every(nonEmpty) || input.experienceId !== experience.id || typeof input.completed !== 'boolean' || (input.observation !== undefined && !nonEmpty(input.observation)) || (input.lessonVersionId !== undefined && !nonEmpty(input.lessonVersionId)) || ((input.curriculumVersionId === undefined) !== (input.configurationSnapshot === undefined))) {
     throw new LearningRecordError('INVALID_LEARNER_RECORD');
   }
   if (input.configurationSnapshot === undefined) return Object.freeze({ ...input });

@@ -13,6 +13,34 @@ model Curriculum {
   createdAt DateTime            @default(now()) @db.Timestamptz(3)
 }
 
+model LessonVersion {
+  id                  String                    @id @db.VarChar(300)
+  lessonKey           String                    @db.VarChar(200)
+  familyId            String                    @db.VarChar(200)
+  versionLabel        String                    @db.VarChar(40)
+  title               String                    @db.VarChar(300)
+  subject             String                    @db.VarChar(120)
+  strand              String                    @db.VarChar(160)
+  learningLevel       String                    @db.VarChar(80)
+  learningGoal        String                    @db.VarChar(1000)
+  successCriteria     Json
+  description         String?                   @db.Text
+  materials           Json
+  steps               Json
+  adaptation          String?                   @db.Text
+  estimatedMinutes    Int?
+  creationMethod      String                    @db.VarChar(20)
+  aiProvider          String?                   @db.VarChar(80)
+  aiModel             String?                   @db.VarChar(120)
+  parentApprovedAt    DateTime?                 @db.Timestamptz(3)
+  createdAt           DateTime                  @default(now()) @db.Timestamptz(3)
+  plannedActivities   Activity[]
+  learningRecords     LearnerLearningRecord[]
+
+  @@unique([familyId, lessonKey, versionLabel])
+  @@index([familyId, createdAt])
+}
+
 model CurriculumVersion {
   id            String                @id @db.VarChar(240)
   curriculumId  String                @db.VarChar(200)
@@ -78,12 +106,15 @@ model Activity {
   familyId    String              @db.VarChar(200)
   planId      String              @db.VarChar(200)
   title       String              @db.VarChar(500)
+  lessonVersionId String?         @db.VarChar(300)
   schedule    Json?
   createdAt   DateTime            @default(now()) @db.Timestamptz(3)
   plan        LearningPlan        @relation(fields: [planId], references: [id], onDelete: Restrict)
   assignments ActivityAssignment[]
   revisions   ActivityScheduleRevision[]
+  lessonVersion LessonVersion?    @relation(fields: [lessonVersionId], references: [id], onDelete: Restrict)
   @@index([familyId, planId])
+  @@index([lessonVersionId])
 }
 
 model ActivityAssignment {
@@ -121,12 +152,15 @@ model LearnerLearningRecord {
   learnerId             String             @db.VarChar(200)
   observation           String?            @db.Text
   completed             Boolean
+  lessonVersionId       String?            @db.VarChar(300)
   curriculumVersionId   String?            @db.VarChar(240)
   configurationSnapshot Json?
   experience            LearningExperience @relation(fields: [experienceId], references: [id], onDelete: Restrict)
   assessments           OutcomeAssessment[]
+  lessonVersion         LessonVersion?    @relation(fields: [lessonVersionId], references: [id], onDelete: Restrict)
   @@unique([experienceId, learnerId])
   @@index([learnerId])
+  @@index([lessonVersionId])
 }
 
 model OutcomeAssessment {

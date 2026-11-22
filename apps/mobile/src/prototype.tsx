@@ -11,6 +11,8 @@ type DemoActivity = {
   readonly learnerIds: readonly DemoLearner[];
   readonly startTime?: string;
   readonly duration: string;
+  readonly lessonId?: string;
+  readonly familyExperience?: string;
   readonly dayOffset: number;
   readonly isComplete: boolean;
 };
@@ -21,6 +23,8 @@ type DemoRecord = {
   readonly subject: string;
   readonly note: string;
   readonly happenedAt: string;
+  readonly lessonId?: string;
+  readonly familyExperience?: string;
 };
 type DemoLesson = { readonly id: string; readonly title: string; readonly subject: string; readonly strand: string; readonly focus: string; readonly learningGoal: string; readonly materials: readonly string[]; readonly adaptation: string; readonly duration: string; readonly description: string; readonly steps: readonly string[]; readonly provenance: string; readonly version: string; readonly reviewStatus: string };
 
@@ -133,6 +137,7 @@ function ActivityCard({ activity, onToggle, onLog }: { readonly activity: DemoAc
         <Text style={styles.activityTime}>{activity.startTime ?? 'Flexible'}</Text>
       </View>
       <Text style={styles.activityTitle}>{activity.title}</Text>
+      {activity.lessonId ? <Text style={styles.linkedLessonText}>K–12 lesson · {demoLessons.find(lesson => lesson.id === activity.lessonId)?.title ?? 'Lesson'}</Text> : null}
       <View style={styles.activityMeta}>
         <LearnerAvatars names={activity.learnerIds} />
         <Text style={styles.metaText}>{activity.duration}</Text>
@@ -162,6 +167,10 @@ export function HomeLearnPrototype({ onOpenApi }: { readonly onOpenApi: () => vo
   const [selectedLessonSubject, setSelectedLessonSubject] = useState('All subjects');
   const [lessonSearch, setLessonSearch] = useState('');
   const [selectedLesson, setSelectedLesson] = useState<DemoLesson | null>(null);
+  const [lessonExperienceDraft, setLessonExperienceDraft] = useState('');
+  const [recordLessonId, setRecordLessonId] = useState<string>();
+  const [recordLessonPickerOpen, setRecordLessonPickerOpen] = useState(false);
+  const [recordFamilyExperience, setRecordFamilyExperience] = useState('');
   const [customSubject, setCustomSubject] = useState('');
   const [customSubjects, setCustomSubjects] = useState<readonly string[]>([]);
   const [activitySheetOpen, setActivitySheetOpen] = useState(false);
@@ -196,9 +205,12 @@ export function HomeLearnPrototype({ onOpenApi }: { readonly onOpenApi: () => vo
     setActivities(current => current.map(activity => activity.id === activityId ? { ...activity, isComplete: !activity.isComplete } : activity));
   };
 
-  const openRecordSheet = (activityTitle = 'Unplanned discovery', learner?: DemoLearner) => {
+  const openRecordSheet = (activityTitle = 'Unplanned discovery', learner?: DemoLearner, lessonId?: string, familyExperience?: string) => {
     setRecordActivityTitle(activityTitle);
     if (learner !== undefined) setRecordLearner(learner);
+    setRecordLessonId(lessonId);
+    setRecordLessonPickerOpen(false);
+    setRecordFamilyExperience(familyExperience ?? '');
     setRecordDraft('');
     setRecordSheetOpen(true);
   };
@@ -208,10 +220,12 @@ export function HomeLearnPrototype({ onOpenApi }: { readonly onOpenApi: () => vo
     const newRecord: DemoRecord = {
       id: `record-${Date.now()}`,
       learner: recordLearner,
-      activityTitle: recordActivityTitle,
-      subject: activities.find(activity => activity.title === recordActivityTitle)?.subject ?? 'Everyday learning',
+      activityTitle: recordFamilyExperience.trim() || recordActivityTitle,
+      subject: activities.find(activity => activity.title === recordActivityTitle)?.subject ?? demoLessons.find(lesson => lesson.id === recordLessonId)?.subject ?? 'Everyday learning',
       note: recordDraft.trim(),
       happenedAt: 'Just now',
+      ...(recordLessonId === undefined ? {} : { lessonId: recordLessonId }),
+      ...(recordFamilyExperience.trim() === '' ? {} : { familyExperience: recordFamilyExperience.trim() }),
     };
     setRecords(current => [newRecord, ...current]);
     setRecordSheetOpen(false);
@@ -236,19 +250,22 @@ export function HomeLearnPrototype({ onOpenApi }: { readonly onOpenApi: () => vo
     setSavedMessage('Activity added to your sample plan');
   };
 
-  const addLessonToPlan = (lesson: DemoLesson) => {
+  const addLessonToPlan = (lesson: DemoLesson, familyExperience = '') => {
     setActivities(current => [...current, {
       id: `lesson-${Date.now()}`,
-      title: lesson.title,
+      title: familyExperience || lesson.title,
       subject: lesson.subject,
       learnerIds: learnerFilter === 'All learners' ? learners : [learnerFilter],
       duration: lesson.duration,
+      lessonId: lesson.id,
+      ...(familyExperience === '' ? {} : { familyExperience }),
       dayOffset: selectedDay,
       isComplete: false,
     }]);
     setSelectedLesson(null);
+    setLessonExperienceDraft('');
     setActiveTab('planner');
-    setSavedMessage('Lesson added to your sample plan');
+    setSavedMessage(familyExperience === '' ? 'Lesson added to your sample plan' : 'Lesson planned with your family experience');
   };
 
   const addCustomSubject = () => {
@@ -324,6 +341,7 @@ export function HomeLearnPrototype({ onOpenApi }: { readonly onOpenApi: () => vo
         onCustomSubjectChange={setCustomSubject}
         onAddCustomSubject={addCustomSubject}
         onOpenLesson={setSelectedLesson}
+        onOpenLessonWorkshop={onOpenApi}
       /> : null}
       {activeTab === 'planner' ? <PlannerTab
         weekDays={weekDays}
@@ -367,9 +385,15 @@ export function HomeLearnPrototype({ onOpenApi }: { readonly onOpenApi: () => vo
             {selectedLesson.steps.map((step, index) => <View key={step} style={styles.lessonStep}><Text style={styles.lessonStepNumber}>{index + 1}</Text><Text style={styles.lessonBody}>{step}</Text></View>)}
             <Text style={styles.formLabel}>ADAPT FOR THIS LEARNER</Text><Text style={styles.lessonBody}>{selectedLesson.adaptation}</Text>
             <Text style={styles.lessonProvenance}>{selectedLesson.provenance} · {selectedLesson.version} · {selectedLesson.reviewStatus}</Text>
+            <View style={styles.familyExperiencePanel}>
+              <Text style={styles.familyExperienceTitle}>Connect it to family life</Text>
+              <Text style={styles.familyExperienceHint}>Use the lesson in an everyday activity or experience you choose.</Text>
+              <TextInput accessibilityLabel="Family experience example" placeholder="e.g. bake together and scale the recipe" value={lessonExperienceDraft} onChangeText={setLessonExperienceDraft} style={styles.formInput} />
+            </View>
             <View style={styles.separationNote}><Text style={styles.separationIcon}>✳</Text><Text style={styles.separationText}>Prototype idea only. Jurisdiction-specific syllabus references are deferred; this content has not been reviewed for K–12 coverage.</Text></View>
           </ScrollView>
           <Pressable accessibilityRole="button" onPress={() => addLessonToPlan(selectedLesson)} style={styles.primaryButton}><Text style={styles.primaryButtonText}>Add lesson to this week</Text></Pressable>
+          <Pressable accessibilityRole="button" accessibilityState={{ disabled: lessonExperienceDraft.trim() === '' }} disabled={lessonExperienceDraft.trim() === ''} onPress={() => addLessonToPlan(selectedLesson, lessonExperienceDraft.trim())} style={[styles.familyExperienceButton, lessonExperienceDraft.trim() === '' && styles.familyExperienceButtonDisabled]}><Text style={styles.familyExperienceButtonText}>Plan with family experience</Text></Pressable>
         </View> : null}
       </View>
     </Modal>
@@ -401,13 +425,25 @@ export function HomeLearnPrototype({ onOpenApi }: { readonly onOpenApi: () => vo
         <View style={styles.sheet}>
           <View style={styles.sheetHandle} />
           <View style={styles.sheetHeading}><Text accessibilityRole="header" style={styles.sheetTitle}>Capture a learning moment</Text><Pressable onPress={() => setRecordSheetOpen(false)}><Text style={styles.sheetClose}>×</Text></Pressable></View>
-          <Text style={styles.formHelper}>The small things are often the important things.</Text>
-          <Text style={styles.formLabel}>WHO WAS LEARNING?</Text>
-          <View style={styles.choiceRow}>{learners.map(learner => <Chip key={learner} label={learner} selected={recordLearner === learner} onPress={() => setRecordLearner(learner)} />)}</View>
-          <Text style={styles.formLabel}>WHAT HAPPENED?</Text>
-          <TextInput accessibilityLabel="Learning observation" multiline placeholder="What did they notice, try, or ask?" value={recordDraft} onChangeText={setRecordDraft} style={[styles.formInput, styles.observationInput]} />
-          <Text style={styles.linkedActivity}>Linked to · {recordActivityTitle}</Text>
-          <View style={styles.separationNote}><Text style={styles.separationIcon}>✳</Text><Text style={styles.separationText}>An observation records what happened. It doesn’t automatically mean a goal was mastered.</Text></View>
+          <ScrollView style={styles.recordFormScroll} contentContainerStyle={styles.recordFormContent} keyboardShouldPersistTaps="handled" showsVerticalScrollIndicator={false}>
+            <Text style={styles.formHelper}>The small things are often the important things.</Text>
+            <Text style={styles.formLabel}>WHO WAS LEARNING?</Text>
+            <View style={styles.choiceRow}>{learners.map(learner => <Chip key={learner} label={learner} selected={recordLearner === learner} onPress={() => setRecordLearner(learner)} />)}</View>
+            <Text style={styles.formLabel}>WHAT HAPPENED?</Text>
+            <TextInput accessibilityLabel="Learning observation" multiline placeholder="What did they notice, try, or ask?" value={recordDraft} onChangeText={setRecordDraft} style={[styles.formInput, styles.observationInput]} />
+            <Text style={styles.formLabel}>FAMILY ACTIVITY OR EXPERIENCE</Text>
+            <TextInput accessibilityLabel="Family activity or experience" placeholder="e.g. baking together or visiting a museum" value={recordFamilyExperience} onChangeText={setRecordFamilyExperience} style={styles.formInput} />
+            <Text style={styles.linkedActivity}>Linked to · {recordActivityTitle}</Text>
+            <Text style={styles.formLabel}>CONNECT TO A K–12 LESSON (OPTIONAL)</Text>
+            {recordLessonId ? <View style={styles.selectedLessonLink}><Text style={styles.selectedLessonLinkText}>Lesson · {demoLessons.find(lesson => lesson.id === recordLessonId)?.title}</Text><Pressable accessibilityRole="button" onPress={() => setRecordLessonId(undefined)}><Text style={styles.link}>Remove</Text></Pressable></View> : null}
+            <Pressable accessibilityRole="button" onPress={() => setRecordLessonPickerOpen(current => !current)} style={styles.lessonPickerButton}><Text style={styles.lessonPickerButtonText}>{recordLessonPickerOpen ? 'Close lesson list' : recordLessonId ? 'Choose a different lesson' : 'Choose a lesson to link'}</Text></Pressable>
+            {recordLessonPickerOpen ? <ScrollView style={styles.recordLessonPicker} nestedScrollEnabled showsVerticalScrollIndicator>
+              {demoLessons.map(lesson => <Pressable accessibilityRole="button" key={lesson.id} onPress={() => { setRecordLessonId(lesson.id); setRecordLessonPickerOpen(false); }} style={styles.recordLessonOption}>
+                <Text style={styles.recordLessonTitle}>{lesson.title}</Text><Text style={styles.recordLessonSubject}>{lesson.subject} · {lesson.strand}</Text>
+              </Pressable>)}
+            </ScrollView> : null}
+            <View style={styles.separationNote}><Text style={styles.separationIcon}>✳</Text><Text style={styles.separationText}>An observation records what happened. It doesn’t automatically mean a goal was mastered.</Text></View>
+          </ScrollView>
           <Pressable accessibilityRole="button" onPress={saveRecord} style={[styles.primaryButton, recordDraft.trim() === '' && styles.primaryButtonDisabled]}><Text style={styles.primaryButtonText}>Save learning moment</Text></Pressable>
         </View>
       </View>
@@ -424,7 +460,7 @@ function HomeTab({ mode, learnerFilter, setLearnerFilter, weekDays, selectedDay,
   readonly onChooseDay: (index: number) => void;
   readonly activities: readonly DemoActivity[];
   readonly onToggleComplete: (id: string) => void;
-  readonly onLog: (title?: string, learner?: DemoLearner) => void;
+  readonly onLog: (title?: string, learner?: DemoLearner, lessonId?: string, familyExperience?: string) => void;
   readonly onAddActivity: () => void;
   readonly onOpenPlanner: () => void;
 }) {
@@ -447,7 +483,7 @@ function HomeTab({ mode, learnerFilter, setLearnerFilter, weekDays, selectedDay,
     </Pressable>)}</View>
 
     <SectionHeading title="Today at your pace" action="See week" onAction={onOpenPlanner} />
-    {activities.length === 0 ? <View style={styles.emptyCard}><Text style={styles.emptyText}>A little breathing room today.</Text><Pressable onPress={onAddActivity}><Text style={styles.link}>Plan something small</Text></Pressable></View> : activities.slice(0, 3).map(activity => <ActivityCard key={activity.id} activity={activity} onToggle={() => onToggleComplete(activity.id)} onLog={() => onLog(activity.title, activity.learnerIds[0])} />)}
+    {activities.length === 0 ? <View style={styles.emptyCard}><Text style={styles.emptyText}>A little breathing room today.</Text><Pressable onPress={onAddActivity}><Text style={styles.link}>Plan something small</Text></Pressable></View> : activities.slice(0, 3).map(activity => <ActivityCard key={activity.id} activity={activity} onToggle={() => onToggleComplete(activity.id)} onLog={() => onLog(activity.title, activity.learnerIds[0], activity.lessonId, activity.familyExperience)} />)}
     <Pressable accessibilityRole="button" onPress={onAddActivity} style={styles.addActivityButton}><Text style={styles.addActivityPlus}>＋</Text><Text style={styles.addActivityText}>Add an activity</Text></Pressable>
 
     <View style={styles.ideaCard}>
@@ -467,7 +503,7 @@ function PlannerTab({ weekDays, selectedDay, selectedDate, onChooseDay, learnerF
   readonly setLearnerFilter: (value: 'All learners' | DemoLearner) => void;
   readonly activities: readonly DemoActivity[];
   readonly onToggleComplete: (id: string) => void;
-  readonly onLog: (title?: string, learner?: DemoLearner) => void;
+  readonly onLog: (title?: string, learner?: DemoLearner, lessonId?: string, familyExperience?: string) => void;
   readonly onAddActivity: () => void;
 }) {
   const selected = weekDays[selectedDay];
@@ -479,13 +515,13 @@ function PlannerTab({ weekDays, selectedDay, selectedDate, onChooseDay, learnerF
     </Pressable>)}</View>
     <View style={styles.learnerChips}>{(['All learners', ...learners] as const).map(learner => <Chip key={learner} label={learner} selected={learnerFilter === learner} onPress={() => setLearnerFilter(learner)} />)}</View>
     <View style={styles.planDateHeading}><Text style={styles.planDateTitle}>{selected?.label}, {selected?.date}</Text><Text style={styles.planDateSubtitle}>{activities.length} planned {activities.length === 1 ? 'activity' : 'activities'}</Text></View>
-    {activities.length === 0 ? <View style={styles.emptyCard}><Text style={styles.emptyText}>Nothing planned for this day.</Text><Text style={styles.formHelper}>Open space is part of the plan.</Text></View> : activities.map(activity => <ActivityCard key={activity.id} activity={activity} onToggle={() => onToggleComplete(activity.id)} onLog={() => onLog(activity.title, activity.learnerIds[0])} />)}
+    {activities.length === 0 ? <View style={styles.emptyCard}><Text style={styles.emptyText}>Nothing planned for this day.</Text><Text style={styles.formHelper}>Open space is part of the plan.</Text></View> : activities.map(activity => <ActivityCard key={activity.id} activity={activity} onToggle={() => onToggleComplete(activity.id)} onLog={() => onLog(activity.title, activity.learnerIds[0], activity.lessonId, activity.familyExperience)} />)}
     <Pressable accessibilityRole="button" onPress={onAddActivity} style={styles.plannerAdd}><Text style={styles.plannerAddText}>＋  Add to {selected?.label ?? 'this day'}</Text></Pressable>
     <View style={styles.plannerNote}><Text style={styles.plannerNoteIcon}>↝</Text><Text style={styles.plannerNoteText}>A plan is a helpful guide, not a checklist. Move things around or leave the day open.</Text></View>
   </View>;
 }
 
-function LessonsTab({ selectedLevel, onSelectLevel, view, onSelectView, selectedSubject, onSelectSubject, search, onSearch, lessons, customSubjects, customSubject, onCustomSubjectChange, onAddCustomSubject, onOpenLesson }: {
+function LessonsTab({ selectedLevel, onSelectLevel, view, onSelectView, selectedSubject, onSelectSubject, search, onSearch, lessons, customSubjects, customSubject, onCustomSubjectChange, onAddCustomSubject, onOpenLesson, onOpenLessonWorkshop }: {
   readonly selectedLevel: string;
   readonly onSelectLevel: (value: string) => void;
   readonly view: 'Browse' | 'Coverage';
@@ -500,12 +536,18 @@ function LessonsTab({ selectedLevel, onSelectLevel, view, onSelectView, selected
   readonly onCustomSubjectChange: (value: string) => void;
   readonly onAddCustomSubject: () => void;
   readonly onOpenLesson: (lesson: DemoLesson) => void;
+  readonly onOpenLessonWorkshop: () => void;
 }) {
   const subjectOptions = ['All subjects', ...lessonSubjects, ...customSubjects];
   return <View>
     <View style={styles.pageTitleRow}><View><Text style={styles.eyebrow}>A LIBRARY THAT GROWS WITH YOU</Text><Text accessibilityRole="header" style={styles.pageTitle}>Lessons</Text></View><View style={styles.progressFlower}><Text style={styles.progressFlowerText}>✳</Text></View></View>
     <Text style={styles.greetingSub}>Browse Kindergarten through Year 12, across the learning areas your family chooses.</Text>
     <View style={styles.lessonBanner}><Text style={styles.lessonBannerTitle}>Find a place to begin</Text><Text style={styles.lessonBannerText}>Browse by level and learning area. Use a lesson as written, adapt it, or simply follow the question it sparks.</Text></View>
+    <Pressable accessibilityRole="button" onPress={onOpenLessonWorkshop} style={styles.lessonCreateCard}>
+      <Text style={styles.lessonCreateTitle}>Create a family lesson</Text>
+      <Text style={styles.lessonCreateText}>Write your own lesson or shape a local AI draft, then use it in your family’s plan and learning record.</Text>
+      <Text style={styles.lessonCreateAction}>Open lesson workshop ›</Text>
+    </Pressable>
     <Text style={styles.formLabel}>LEARNING LEVEL</Text>
     <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.choiceRow}>
       {learningLevels.map(level => <Chip key={level} label={level === 'Kindergarten' ? 'Kindergarten' : level.replace('Year ', 'Yr ')} selected={selectedLevel === level} onPress={() => onSelectLevel(level)} />)}
@@ -560,7 +602,8 @@ function JournalTab({ records, learnerFilter, setLearnerFilter, onAdd }: {
       <View style={styles.journalContent}>
         <View style={styles.journalMeta}><Text style={styles.journalLearner}>{record.learner}</Text><Text style={styles.metaDot}>·</Text><Text style={styles.journalDate}>{record.happenedAt}</Text></View>
         <Text style={styles.journalNote}>{record.note}</Text>
-        <View style={styles.journalTag}><Text style={[styles.journalTagText, { color: subjectColors[record.subject] ?? '#71847a' }]}>{record.subject}</Text><Text style={styles.journalTagText}> · {record.activityTitle}</Text></View>
+        <View style={styles.journalTag}><Text style={[styles.journalTagText, { color: subjectColors[record.subject] ?? '#71847a' }]}>{record.subject}</Text><Text style={styles.journalTagText}> · {record.familyExperience ?? record.activityTitle}</Text></View>
+        {record.lessonId ? <View style={styles.journalLessonLink}><Text style={styles.journalLessonLinkText}>K–12 lesson · {demoLessons.find(lesson => lesson.id === record.lessonId)?.title}</Text></View> : null}
       </View>
     </View>)}
     <View style={styles.privacyCard}><Text style={styles.privacyIcon}>⌑</Text><Text style={styles.privacyText}>Your journal belongs to your family. These prototype notes are only held on this screen.</Text></View>
@@ -677,6 +720,7 @@ const styles = StyleSheet.create({
   subjectLabel: { fontSize: 8, letterSpacing: 1.05, fontWeight: '800' },
   activityTime: { color: '#8d968c', fontSize: 10, fontWeight: '600' },
   activityTitle: { color: '#35483c', fontFamily: 'Georgia', fontSize: 16, fontWeight: '600', marginTop: 6 },
+  linkedLessonText: { color: '#6b8872', fontSize: 9, fontWeight: '700', marginTop: 4 },
   activityMeta: { flexDirection: 'row', alignItems: 'center', marginTop: 8 },
   avatars: { flexDirection: 'row', alignItems: 'center' },
   avatar: { width: 21, height: 21, borderRadius: 11, alignItems: 'center', justifyContent: 'center', borderWidth: 1.5, borderColor: '#fff' },
@@ -720,6 +764,10 @@ const styles = StyleSheet.create({
   lessonBanner: { backgroundColor: '#e8eee5', borderRadius: 16, padding: 15, marginTop: 16, marginBottom: 18 },
   lessonBannerTitle: { color: '#365144', fontFamily: 'Georgia', fontSize: 17, fontWeight: '600' },
   lessonBannerText: { color: '#758678', fontSize: 10, lineHeight: 15, marginTop: 5 },
+  lessonCreateCard: { backgroundColor: '#f0e9dd', borderRadius: 15, padding: 15, marginBottom: 16 },
+  lessonCreateTitle: { color: '#4d5544', fontFamily: 'Georgia', fontSize: 16, fontWeight: '600' },
+  lessonCreateText: { color: '#7f7869', fontSize: 10, lineHeight: 15, marginTop: 5 },
+  lessonCreateAction: { color: '#57725f', fontSize: 10, fontWeight: '800', marginTop: 10 },
   catalogNote: { flexDirection: 'row', alignItems: 'flex-start', backgroundColor: '#f0e9dd', borderRadius: 12, padding: 11, marginTop: 14 },
   catalogNoteIcon: { color: '#987e5e', fontSize: 17, marginRight: 8 },
   catalogNoteText: { flex: 1, color: '#857966', fontSize: 9, lineHeight: 14 },
@@ -755,7 +803,15 @@ const styles = StyleSheet.create({
   coverageCounts: { flexDirection: 'row', justifyContent: 'space-between', marginTop: 8 },
   lessonPreviewScroll: { flexGrow: 0, maxHeight: '70%' },
   lessonPreviewContent: { gap: 8, paddingBottom: 8 },
+  recordFormScroll: { flexGrow: 0, maxHeight: '70%' },
+  recordFormContent: { gap: 9, paddingBottom: 8 },
   lessonProvenance: { color: '#8a9589', fontSize: 9, lineHeight: 14, marginTop: 5 },
+  familyExperiencePanel: { backgroundColor: '#e8eee5', borderRadius: 13, padding: 12, gap: 8, marginTop: 6 },
+  familyExperienceTitle: { color: '#365144', fontFamily: 'Georgia', fontSize: 15, fontWeight: '600' },
+  familyExperienceHint: { color: '#758678', fontSize: 10, lineHeight: 14 },
+  familyExperienceButton: { borderWidth: 1, borderColor: '#c8d4c8', borderRadius: 13, alignItems: 'center', paddingVertical: 12, marginTop: -5 },
+  familyExperienceButtonDisabled: { opacity: 0.5 },
+  familyExperienceButtonText: { color: '#56775e', fontSize: 11, fontWeight: '800' },
   roundAdd: { width: 38, height: 38, borderRadius: 12, backgroundColor: '#315b4a', alignItems: 'center', justifyContent: 'center' },
   roundAddText: { color: '#fff', fontSize: 22, lineHeight: 25 },
   weekRange: { color: '#89938a', fontSize: 11, marginBottom: 17 },
@@ -783,6 +839,8 @@ const styles = StyleSheet.create({
   journalNote: { color: '#4c584f', fontFamily: 'Georgia', fontSize: 14, lineHeight: 20, marginTop: 8 },
   journalTag: { flexDirection: 'row', marginTop: 9 },
   journalTagText: { color: '#89938a', fontSize: 9, fontWeight: '600' },
+  journalLessonLink: { alignSelf: 'flex-start', backgroundColor: '#e9efe6', borderRadius: 8, paddingHorizontal: 8, paddingVertical: 5, marginTop: 7 },
+  journalLessonLinkText: { color: '#5e7b64', fontSize: 9, fontWeight: '700' },
   privacyCard: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#eeefe8', borderRadius: 12, padding: 12, marginTop: 7 },
   privacyIcon: { color: '#7a8c7b', fontSize: 19, marginRight: 9 },
   privacyText: { flex: 1, color: '#839084', fontSize: 9, lineHeight: 14 },
@@ -812,7 +870,7 @@ const styles = StyleSheet.create({
   assessmentHintText: { color: '#857966', fontSize: 9, lineHeight: 14, marginTop: 4 },
   modalRoot: { flex: 1, justifyContent: 'flex-end', backgroundColor: 'rgba(30, 47, 39, 0.35)' },
   modalBackdrop: { ...StyleSheet.absoluteFill },
-  sheet: { width: '100%', maxWidth: 600, alignSelf: 'center', backgroundColor: '#faf9f4', paddingHorizontal: 20, paddingTop: 10, paddingBottom: 28, borderTopLeftRadius: 25, borderTopRightRadius: 25, borderRadius: 25, gap: 10 },
+  sheet: { width: '100%', maxWidth: 600, maxHeight: '90%', alignSelf: 'center', backgroundColor: '#faf9f4', paddingHorizontal: 20, paddingTop: 10, paddingBottom: 28, borderTopLeftRadius: 25, borderTopRightRadius: 25, borderRadius: 25, gap: 10 },
   sheetHandle: { alignSelf: 'center', width: 37, height: 4, borderRadius: 2, backgroundColor: '#d6dbd2', marginBottom: 4 },
   sheetHeading: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 5 },
   sheetTitle: { color: '#304b3e', fontFamily: 'Georgia', fontSize: 22, fontWeight: '600' },
@@ -828,6 +886,14 @@ const styles = StyleSheet.create({
   timePreviewText: { color: '#6e806f', fontSize: 10, fontWeight: '600' },
   formHelper: { color: '#8b958a', fontSize: 11, marginTop: -4, marginBottom: 2 },
   linkedActivity: { color: '#879187', fontSize: 10 },
+  selectedLessonLink: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', backgroundColor: '#e9efe6', borderRadius: 10, paddingHorizontal: 10, paddingVertical: 8 },
+  selectedLessonLinkText: { color: '#5e7b64', fontSize: 10, fontWeight: '700', flex: 1 },
+  lessonPickerButton: { alignSelf: 'flex-start', paddingVertical: 5 },
+  lessonPickerButtonText: { color: '#6b8872', fontSize: 10, fontWeight: '700' },
+  recordLessonPicker: { maxHeight: 140, borderWidth: 1, borderColor: '#e1e5dc', borderRadius: 10, backgroundColor: '#fff' },
+  recordLessonOption: { paddingHorizontal: 10, paddingVertical: 8, borderBottomWidth: 1, borderBottomColor: '#f0f1eb' },
+  recordLessonTitle: { color: '#3d5547', fontSize: 11, fontWeight: '700' },
+  recordLessonSubject: { color: '#89938a', fontSize: 9, marginTop: 2 },
   separationNote: { flexDirection: 'row', alignItems: 'flex-start', backgroundColor: '#f0e9dd', borderRadius: 12, padding: 11, marginTop: 2 },
   separationIcon: { color: '#9e805d', fontSize: 15, marginRight: 8 },
   separationText: { flex: 1, color: '#7d725f', fontSize: 9, lineHeight: 14 },

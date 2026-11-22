@@ -9,9 +9,10 @@ const assessmentJudgements = ['emerging', 'developing', 'demonstrated', 'not-ass
 type Judgement = typeof assessmentJudgements[number];
 type Plan = { id: string; title: string; startsOn: string; endsOn: string };
 type Schedule = { startsAt: string; endsAt: string; timeZone: string };
-type Activity = { id: string; planId: string; title: string; learnerIds: string[]; schedule?: Schedule; scheduleHistory?: readonly unknown[] };
-type Experience = { id: string; title: string; happenedAt: string };
-type LearningRecord = { id: string; experienceId: string; learnerId: string; completed: boolean; observation?: string; curriculumVersionId?: string };
+type Activity = { id: string; planId: string; title: string; learnerIds: string[]; lessonVersionId?: string; schedule?: Schedule; scheduleHistory?: readonly unknown[] };
+type Experience = { id: string; title: string; happenedAt: string; activityId?: string };
+type LessonVersion = { id: string; lessonKey: string; familyId: string; versionLabel: string; title: string; subject: string; strand: string; learningLevel: string; learningGoal: string; successCriteria: string[]; description?: string; materials: string[]; steps: string[]; adaptation?: string; estimatedMinutes?: number; creationMethod: 'manual' | 'ai-generated'; aiProvider?: string; aiModel?: string; parentApprovedAt?: string; createdAt: string };
+type LearningRecord = { id: string; experienceId: string; learnerId: string; completed: boolean; observation?: string; lessonVersionId?: string; curriculumVersionId?: string };
 type Assessment = { id: string; learnerRecordId: string; outcomeId: string; assessedAt: string; judgement: Judgement; rationale?: string };
 
 async function request<T>(path: string, body?: unknown, method = 'POST'): Promise<T> {
@@ -51,6 +52,7 @@ function LocalApiWorkflow({ onBackToPrototype }: { readonly onBackToPrototype: (
   const [activities, setActivities] = useState<Activity[]>([]);
   const [experiences, setExperiences] = useState<Experience[]>([]);
   const [records, setRecords] = useState<LearningRecord[]>([]);
+  const [lessonVersions, setLessonVersions] = useState<LessonVersion[]>([]);
   const [assessments, setAssessments] = useState<Assessment[]>([]);
   const [planTitle, setPlanTitle] = useState('Learning this week');
   const [selectedPlanId, setSelectedPlanId] = useState('');
@@ -61,6 +63,24 @@ function LocalApiWorkflow({ onBackToPrototype }: { readonly onBackToPrototype: (
   const [endsAt, setEndsAt] = useState(() => localTime(10));
   const [timeZone, setTimeZone] = useState('Australia/Sydney');
   const [editingActivityId, setEditingActivityId] = useState<string>();
+  const [activityLessonVersionId, setActivityLessonVersionId] = useState('');
+  const [recordActivityId, setRecordActivityId] = useState('');
+  const [recordLessonVersionId, setRecordLessonVersionId] = useState<string | null | undefined>(undefined);
+  const [lessonTitle, setLessonTitle] = useState('');
+  const [lessonSubject, setLessonSubject] = useState('English');
+  const [lessonStrand, setLessonStrand] = useState('');
+  const [lessonLevel, setLessonLevel] = useState('Kindergarten');
+  const [lessonGoal, setLessonGoal] = useState('');
+  const [lessonCriteria, setLessonCriteria] = useState('');
+  const [lessonDescription, setLessonDescription] = useState('');
+  const [lessonMaterials, setLessonMaterials] = useState('');
+  const [lessonSteps, setLessonSteps] = useState('');
+  const [lessonAdaptation, setLessonAdaptation] = useState('');
+  const [lessonMinutes, setLessonMinutes] = useState('30');
+  const [isAiDraft, setIsAiDraft] = useState(false);
+  const [hasReviewedAiDraft, setHasReviewedAiDraft] = useState(false);
+  const [lessonAiProvider, setLessonAiProvider] = useState('');
+  const [lessonAiModel, setLessonAiModel] = useState('');
   const [experienceTitle, setExperienceTitle] = useState('Unplanned learning');
   const [recordLearnerId, setRecordLearnerId] = useState(learnerId);
   const [recordObservation, setRecordObservation] = useState('');
@@ -73,17 +93,19 @@ function LocalApiWorkflow({ onBackToPrototype }: { readonly onBackToPrototype: (
 
   const refresh = useCallback(async () => {
     try {
-      const [nextPlans, nextActivities, nextExperiences, nextRecords] = await Promise.all([
+      const [nextPlans, nextActivities, nextExperiences, nextRecords, nextLessons] = await Promise.all([
         request<Plan[]>('/api/v1/plans'),
         request<Activity[]>('/api/v1/activities'),
         request<Experience[]>('/api/v1/learning-experiences'),
         request<LearningRecord[]>('/api/v1/learner-records'),
+        request<LessonVersion[]>(`/api/v1/lesson-versions?familyId=${encodeURIComponent(familyId)}`, undefined, 'GET'),
       ]);
       const nextAssessments = await loadAssessments(nextRecords);
       setPlans(nextPlans);
       setActivities(nextActivities);
       setExperiences(nextExperiences);
       setRecords(nextRecords);
+      setLessonVersions(nextLessons);
       setAssessments(nextAssessments);
       setSelectedPlanId(current => current || nextPlans[0]?.id || '');
       setMessage('');
@@ -118,6 +140,7 @@ function LocalApiWorkflow({ onBackToPrototype }: { readonly onBackToPrototype: (
     setEditingActivityId(undefined);
     setActivityTitle('');
     setActivityLearners(learnerId);
+    setActivityLessonVersionId('');
     setIsScheduled(false);
   };
 
@@ -126,6 +149,7 @@ function LocalApiWorkflow({ onBackToPrototype }: { readonly onBackToPrototype: (
     setSelectedPlanId(activity.planId);
     setActivityTitle(activity.title);
     setActivityLearners(activity.learnerIds.join(', '));
+    setActivityLessonVersionId(activity.lessonVersionId ?? '');
     setIsScheduled(activity.schedule !== undefined);
     if (activity.schedule !== undefined) {
       setStartsAt(activity.schedule.startsAt);
@@ -142,10 +166,12 @@ function LocalApiWorkflow({ onBackToPrototype }: { readonly onBackToPrototype: (
       await request('/api/v1/activities', {
         id: id(), familyId, planId: selectedPlanId, title: activityTitle.trim(), learnerIds: learners,
         ...(schedule === undefined ? {} : { schedule }),
+        ...(activityLessonVersionId === '' ? {} : { lessonVersionId: activityLessonVersionId }),
       });
     } else {
       await request(`/api/v1/activities/${encodeURIComponent(editingActivityId)}`, {
         title: activityTitle.trim(), learnerIds: learners, schedule: schedule ?? null,
+        lessonVersionId: activityLessonVersionId || null,
         changedAt: new Date().toISOString(), changedBy: 'adult-local',
       }, 'PATCH');
     }
@@ -156,17 +182,69 @@ function LocalApiWorkflow({ onBackToPrototype }: { readonly onBackToPrototype: (
   const recordLearning = () => withBusy(async () => {
     if (experienceTitle.trim() === '' || recordLearnerId.trim() === '') throw new Error('An experience title and learner ID are required.');
     const experienceId = id();
+    const selectedActivity = activities.find(activity => activity.id === recordActivityId);
+    const linkedLessonVersionId = recordLessonVersionId === null ? undefined : recordLessonVersionId ?? selectedActivity?.lessonVersionId;
     await request('/api/v1/learning-experiences', {
       id: experienceId, familyId, happenedAt: new Date().toISOString(), title: experienceTitle.trim(),
+      ...(selectedActivity === undefined ? {} : { activityId: selectedActivity.id }),
     });
     await request('/api/v1/learner-records', {
       id: id(), experienceId, learnerId: recordLearnerId.trim(), completed: false,
+      ...(linkedLessonVersionId === undefined ? {} : { lessonVersionId: linkedLessonVersionId }),
       ...(recordObservation.trim() === '' ? {} : { observation: recordObservation.trim() }),
       ...(curriculumVersionId.trim() === '' ? {} : { curriculumVersionId: curriculumVersionId.trim(), configurationSnapshot: { sourceKind: 'family-defined' } }),
     });
     setRecordObservation('');
+    setRecordActivityId('');
+    setRecordLessonVersionId(undefined);
     await refresh();
   }, 'Could not save the learning record. Check the learner ID and local API.');
+
+  const saveLessonVersion = () => withBusy(async () => {
+    if (lessonTitle.trim() === '' || lessonStrand.trim() === '' || lessonGoal.trim() === '') throw new Error('Add a title, strand, and learning goal.');
+    if (isAiDraft && !hasReviewedAiDraft) throw new Error('Review and approve the AI draft before saving it.');
+    if (isAiDraft && (lessonAiProvider === '' || lessonAiModel === '')) throw new Error('AI provider details are missing. Generate the draft again.');
+    const lessonId = id();
+    const saved = await request<LessonVersion>('/api/v1/lesson-versions', {
+      id: lessonId, lessonKey: lessonId, familyId, versionLabel: '1.0', title: lessonTitle.trim(),
+      subject: lessonSubject.trim(), strand: lessonStrand.trim(), learningLevel: lessonLevel.trim(),
+      learningGoal: lessonGoal.trim(), successCriteria: lessonCriteria.split('\n').map(value => value.trim()).filter(Boolean),
+      ...(lessonDescription.trim() === '' ? {} : { description: lessonDescription.trim() }),
+      materials: lessonMaterials.split('\n').map(value => value.trim()).filter(Boolean),
+      steps: lessonSteps.split('\n').map(value => value.trim()).filter(Boolean),
+      ...(lessonAdaptation.trim() === '' ? {} : { adaptation: lessonAdaptation.trim() }),
+      ...(lessonMinutes.trim() === '' ? {} : { estimatedMinutes: Number(lessonMinutes) }),
+      creationMethod: isAiDraft ? 'ai-generated' : 'manual',
+      ...(isAiDraft ? { parentApproved: true } : {}),
+      ...(isAiDraft ? { aiProvider: lessonAiProvider, aiModel: lessonAiModel } : {}),
+    });
+    setActivityLessonVersionId(saved.id);
+    setRecordLessonVersionId(saved.id);
+    setLessonTitle(''); setLessonStrand(''); setLessonGoal(''); setLessonCriteria(''); setLessonDescription('');
+    setLessonMaterials(''); setLessonSteps(''); setLessonAdaptation(''); setIsAiDraft(false); setHasReviewedAiDraft(false);
+    setLessonAiProvider(''); setLessonAiModel('');
+    await refresh();
+  }, 'Could not save this lesson. Check the required fields and local API.');
+
+  const generateLessonDraft = () => withBusy(async () => {
+    if (lessonSubject.trim() === '' || lessonStrand.trim() === '' || lessonLevel.trim() === '' || lessonGoal.trim() === '') throw new Error('Add a topic, subject, strand, and learning level first.');
+    const draft = await request<Omit<LessonVersion, 'id' | 'lessonKey' | 'familyId' | 'versionLabel' | 'creationMethod' | 'parentApprovedAt' | 'createdAt'> & { creationMethod: 'ai-generated'; aiProvider: string; aiModel: string; requiresParentReview: true }>('/api/v1/lesson-drafts', {
+      subject: lessonSubject.trim(), strand: lessonStrand.trim(), learningLevel: lessonLevel.trim(), topic: lessonGoal.trim(),
+    });
+    setLessonTitle(draft.title); setLessonGoal(draft.learningGoal); setLessonCriteria(draft.successCriteria.join('\n'));
+    setLessonSubject(draft.subject); setLessonStrand(draft.strand); setLessonLevel(draft.learningLevel);
+    setLessonDescription(draft.description ?? ''); setLessonMaterials(draft.materials.join('\n')); setLessonSteps(draft.steps.join('\n'));
+    setLessonAdaptation(draft.adaptation ?? ''); setLessonMinutes(String(draft.estimatedMinutes ?? 30));
+    setLessonAiProvider(draft.aiProvider); setLessonAiModel(draft.aiModel);
+    setIsAiDraft(true); setHasReviewedAiDraft(false);
+  }, 'Could not generate a local AI draft. Check that Ollama is running and the configured model is available.');
+
+  const editLessonField = (update: (value: string) => void) => (value: string) => {
+    update(value);
+    if (isAiDraft) setHasReviewedAiDraft(false);
+  };
+  const selectedRecordActivity = activities.find(activity => activity.id === recordActivityId);
+  const visibleRecordLessonId = recordLessonVersionId === null ? undefined : recordLessonVersionId ?? selectedRecordActivity?.lessonVersionId;
 
   const saveObservation = (record: LearningRecord) => withBusy(async () => {
     const observation = observationDrafts[record.id] ?? record.observation ?? '';
@@ -198,6 +276,32 @@ function LocalApiWorkflow({ onBackToPrototype }: { readonly onBackToPrototype: (
     <Text style={styles.body}>Plan learning and record what happens. Local demo uses synthetic family and learner IDs only.</Text>
     {message ? <Text accessibilityRole="alert" style={styles.message}>{message}</Text> : null}
 
+    <Text accessibilityRole="header" style={styles.heading}>Family lesson workshop</Text>
+    <Text style={styles.body}>Write an original lesson for any subject and learning level. Local AI can prepare a draft; review it before saving. Keep learner names and personal details out of AI topics.</Text>
+    <TextInput accessibilityLabel="Lesson title" style={styles.input} placeholder="Lesson title" value={lessonTitle} onChangeText={editLessonField(setLessonTitle)} />
+    <TextInput accessibilityLabel="Lesson subject" style={styles.input} placeholder="Subject, e.g. Mathematics" value={lessonSubject} onChangeText={editLessonField(setLessonSubject)} />
+    <TextInput accessibilityLabel="Lesson strand" style={styles.input} placeholder="Strand or topic area" value={lessonStrand} onChangeText={editLessonField(setLessonStrand)} />
+    <TextInput accessibilityLabel="Learning level" style={styles.input} placeholder="Kindergarten, Year 1 … Year 12" value={lessonLevel} onChangeText={editLessonField(setLessonLevel)} />
+    <TextInput accessibilityLabel="Learning goal" style={styles.input} placeholder="Topic or learning goal" value={lessonGoal} onChangeText={editLessonField(setLessonGoal)} />
+    <TextInput accessibilityLabel="Lesson description" style={styles.input} placeholder="Description (optional)" value={lessonDescription} onChangeText={editLessonField(setLessonDescription)} />
+    <TextInput accessibilityLabel="Success criteria" style={[styles.input, styles.multiline]} multiline placeholder="Success criteria, one per line (optional)" value={lessonCriteria} onChangeText={editLessonField(setLessonCriteria)} />
+    <TextInput accessibilityLabel="Lesson materials" style={[styles.input, styles.multiline]} multiline placeholder="Materials, one per line" value={lessonMaterials} onChangeText={editLessonField(setLessonMaterials)} />
+    <TextInput accessibilityLabel="Lesson steps" style={[styles.input, styles.multiline]} multiline placeholder="Teaching steps, one per line" value={lessonSteps} onChangeText={editLessonField(setLessonSteps)} />
+    <TextInput accessibilityLabel="Lesson adaptation" style={[styles.input, styles.multiline]} multiline placeholder="Adaptation or extension (optional)" value={lessonAdaptation} onChangeText={editLessonField(setLessonAdaptation)} />
+    <TextInput accessibilityLabel="Estimated minutes" style={styles.input} keyboardType="number-pad" value={lessonMinutes} onChangeText={editLessonField(setLessonMinutes)} />
+    <Button title="Draft with local AI" disabled={busy} onPress={() => void generateLessonDraft()} />
+    {isAiDraft ? <View style={styles.row}>
+      <Text style={styles.body}>AI draft · review all details before saving</Text>
+      <Switch accessibilityLabel="I reviewed and approve this AI draft" value={hasReviewedAiDraft} onValueChange={setHasReviewedAiDraft} />
+    </View> : null}
+    <Button title={isAiDraft ? 'Approve and save lesson version' : 'Save family lesson'} disabled={busy || (isAiDraft && !hasReviewedAiDraft)} onPress={() => void saveLessonVersion()} />
+    {lessonVersions.map(lesson => <View key={lesson.id} style={styles.card}>
+      <Text style={styles.item}>{lesson.title} · {lesson.subject} · {lesson.learningLevel} · v{lesson.versionLabel}</Text>
+      <Text style={styles.body}>{lesson.creationMethod === 'ai-generated' ? `AI-generated · parent approved · ${lesson.aiProvider ?? 'AI'} ${lesson.aiModel ?? ''}` : 'Family-authored'} · {lesson.steps.length} teaching steps</Text>
+      <Button title="Use in planned activity" disabled={busy} onPress={() => setActivityLessonVersionId(lesson.id)} />
+      <Button title="Link to learning experience" disabled={busy} onPress={() => setRecordLessonVersionId(lesson.id)} />
+    </View>)}
+
     <Text accessibilityRole="header" style={styles.heading}>Weekly plans</Text>
     <TextInput accessibilityLabel="Plan title" style={styles.input} value={planTitle} onChangeText={setPlanTitle} />
     <Button title="Create a weekly plan" disabled={busy} onPress={() => void createPlan()} />
@@ -209,6 +313,8 @@ function LocalApiWorkflow({ onBackToPrototype }: { readonly onBackToPrototype: (
     <Text accessibilityRole="header" style={styles.heading}>Activities</Text>
     <TextInput accessibilityLabel="Activity title" style={styles.input} placeholder="Activity title" value={activityTitle} onChangeText={setActivityTitle} />
     <TextInput accessibilityLabel="Learner IDs" style={styles.input} placeholder="Learner IDs, comma separated" value={activityLearners} onChangeText={setActivityLearners} />
+    <Text style={styles.body}>Lesson version: {lessonVersions.find(lesson => lesson.id === activityLessonVersionId)?.title ?? 'None selected'}</Text>
+    <Button title="Clear activity lesson" disabled={busy || activityLessonVersionId === ''} onPress={() => setActivityLessonVersionId('')} />
     <View style={styles.row}><Text style={styles.body}>Schedule this activity</Text><Switch accessibilityLabel="Schedule this activity" value={isScheduled} onValueChange={setIsScheduled} /></View>
     {isScheduled ? <>
       <TextInput accessibilityLabel="Starts at" style={styles.input} value={startsAt} onChangeText={setStartsAt} />
@@ -219,20 +325,28 @@ function LocalApiWorkflow({ onBackToPrototype }: { readonly onBackToPrototype: (
     {editingActivityId !== undefined ? <Button title="Cancel editing" disabled={busy} onPress={resetActivityForm} /> : null}
     {activities.map(activity => <View key={activity.id} style={styles.card}>
       <Text style={styles.item}>{activity.title} · {activity.learnerIds.join(', ')} · {activity.schedule === undefined ? 'flexible' : 'scheduled'}</Text>
+      {activity.lessonVersionId ? <Text style={styles.body}>Lesson: {lessonVersions.find(lesson => lesson.id === activity.lessonVersionId)?.title ?? activity.lessonVersionId}</Text> : null}
       {activity.scheduleHistory?.length ? <Text style={styles.body}>Schedule changes: {activity.scheduleHistory.length}</Text> : null}
       <Button title="Edit activity" disabled={busy} onPress={() => editActivity(activity)} />
+      <Button title="Use for learning record" disabled={busy} onPress={() => { setRecordActivityId(activity.id); setExperienceTitle(activity.title); setRecordLessonVersionId(activity.lessonVersionId); }} />
     </View>)}
 
     <Text accessibilityRole="header" style={styles.heading}>Learning records</Text>
     <TextInput accessibilityLabel="Experience title" style={styles.input} value={experienceTitle} onChangeText={setExperienceTitle} />
+    <Text style={styles.body}>Planned activity: {activities.find(activity => activity.id === recordActivityId)?.title ?? 'Unplanned experience'}</Text>
+    <Button title="Clear planned activity" disabled={busy || recordActivityId === ''} onPress={() => setRecordActivityId('')} />
     <TextInput accessibilityLabel="Learner ID" style={styles.input} value={recordLearnerId} onChangeText={setRecordLearnerId} />
     <TextInput accessibilityLabel="Observation" style={[styles.input, styles.multiline]} multiline value={recordObservation} onChangeText={setRecordObservation} placeholder="Parent observation (optional)" />
     <TextInput accessibilityLabel="Curriculum version ID" style={styles.input} value={curriculumVersionId} onChangeText={setCurriculumVersionId} placeholder="Parent-defined curriculum version (optional)" />
+    <Text style={styles.body}>Lesson version: {lessonVersions.find(lesson => lesson.id === visibleRecordLessonId)?.title ?? 'None selected'}</Text>
+    <Button title="Clear experience lesson" disabled={busy || visibleRecordLessonId === undefined} onPress={() => setRecordLessonVersionId(null)} />
     <Button title="Record unplanned learning" disabled={busy} onPress={() => void recordLearning()} />
     {experiences.map(experience => <View key={experience.id} style={styles.card}>
       <Text style={styles.item}>{experience.title} · {new Date(experience.happenedAt).toLocaleDateString()}</Text>
+      {experience.activityId ? <Text style={styles.body}>Planned activity: {activities.find(activity => activity.id === experience.activityId)?.title ?? experience.activityId}</Text> : null}
       {records.filter(record => record.experienceId === experience.id).map(record => <View key={record.id} style={styles.record}>
         <Text style={styles.body}>{record.learnerId} · {record.completed ? 'Activity completed' : 'Learning recorded; activity completion not marked'}</Text>
+        {record.lessonVersionId ? <Text style={styles.body}>K–12 lesson · {lessonVersions.find(lesson => lesson.id === record.lessonVersionId)?.title ?? record.lessonVersionId}</Text> : null}
         <TextInput accessibilityLabel={`Observation for ${record.learnerId}`} style={[styles.input, styles.multiline]} multiline value={observationDrafts[record.id] ?? record.observation ?? ''} onChangeText={value => setObservationDrafts(current => ({ ...current, [record.id]: value }))} placeholder="Parent observation" />
         <Button title="Save observation" disabled={busy} onPress={() => void saveObservation(record)} />
         {record.curriculumVersionId ? <>

@@ -8,9 +8,13 @@ import { registerLearningRecordRoutes } from "./modules/learning-records/present
 import { PrismaCurriculumRepository } from "./modules/curriculum/infrastructure/prisma-curriculum-repository.js";
 import { PrismaPlanningRepository } from "./modules/planning/infrastructure/prisma-planning-repository.js";
 import { PrismaLearningRecordRepository } from "./modules/learning-records/infrastructure/prisma-learning-record-repository.js";
+import { InMemoryLessonRepository } from "./modules/lessons/infrastructure/in-memory-lesson-repository.js";
+import { PrismaLessonRepository } from "./modules/lessons/infrastructure/prisma-lesson-repository.js";
+import { registerLessonRoutes } from "./modules/lessons/presentation/lesson-routes.js";
+import type { LessonDraftProvider } from "./modules/lessons/index.js";
 import type { PrismaClient } from "./generated/prisma/client.js";
 export function buildApp(
-  dependencies: { readonly prisma?: PrismaClient } = {},
+  dependencies: { readonly prisma?: PrismaClient; readonly lessonDraftProvider?: LessonDraftProvider } = {},
 ) {
   const app = Fastify({
     logger: {
@@ -38,6 +42,10 @@ export function buildApp(
     },
     async () => ({ status: "ok" }),
   );
+  const lessonRepository = dependencies.prisma === undefined
+    ? new InMemoryLessonRepository()
+    : new PrismaLessonRepository(dependencies.prisma);
+  void registerLessonRoutes(app, lessonRepository, dependencies.lessonDraftProvider);
   void registerCurriculumRoutes(
     app,
     dependencies.prisma === undefined
@@ -49,12 +57,14 @@ export function buildApp(
     dependencies.prisma === undefined
       ? new InMemoryPlanningRepository()
       : new PrismaPlanningRepository(dependencies.prisma),
+    lessonRepository,
   );
   void registerLearningRecordRoutes(
     app,
     dependencies.prisma === undefined
       ? new InMemoryLearningRecordRepository()
       : new PrismaLearningRecordRepository(dependencies.prisma),
+    lessonRepository,
   );
   return app;
 }
