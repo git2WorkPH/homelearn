@@ -17,7 +17,7 @@ Status: Roadmap baseline; milestone scope is updated as the user approves implem
 
 Each milestone includes traceability, change justification, tests and review. Dependencies follow the sequence; content design may proceed alongside core workflows when separately authorised. Calendar estimates await authentication, storage and hosting decisions.
 
-Current implementation: family lesson authoring and optional local AI drafting are available in the local API workflow. The shared catalogue slice adds 56 K–3 drafts, a K–12 coverage endpoint and mobile browse-to-plan linking. Migration `0002_family_lessons` is applied (PostgreSQL persistence was verified in the preceding milestone); catalogue-reference migration `0003_catalogue_lesson_references` is prepared but unapplied. No commit, push, or migration execution is included in this catalogue milestone.
+Current implementation: family lesson authoring and optional local AI drafting are available in the local API workflow. The shared catalogue slice adds 56 K–3 drafts, a K–12 coverage endpoint and mobile browse-to-plan linking. Migration `0002_family_lessons` is applied (PostgreSQL persistence was verified in the preceding milestone); the user reports applying catalogue-reference migration `0003_catalogue_lesson_references`, but that persistence has not been independently verified. No push or migration execution was performed by this catalogue implementation.
 
 ## Approved sequence adjustment — 20 November 2026
 

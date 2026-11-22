@@ -6,7 +6,7 @@ Authorisation: user approved the first catalogue implementation slice and reques
 
 Changes: add a source-controlled versioned pack with 56 original K–3 draft lessons across seven learning areas, K–12 catalogue and coverage API, mobile browse/search/filter/detail flow, and optional versioned references from activities and learning records. Every lesson is identified as needing parent review; uncovered levels and areas remain visible. Add Prisma migration `0003_catalogue_lesson_references`; it has not been applied.
 
-Validation: API/mobile typecheck, Oxlint, API build, iOS Expo export, Prisma client generation and `git diff --check` pass. No test suites were run in this execution. No commit, push or migration deployment was performed.
+Validation: API/mobile typecheck, Oxlint, API build, iOS Expo export, Prisma client generation and `git diff --check` pass. No test suites were run in this execution. The user later reported migration `0003_catalogue_lesson_references` applied; persistence has not been independently verified. The implementation was committed locally; no push was performed.
 
 Limitations: the 56 lessons are drafts awaiting parent review, coverage is not editorially verified, K–4–12 lesson authoring/content remains outstanding, Languages content awaits a language choice, and no NSW syllabus mapping or compliance claim is included. Authentication and family authorization remain deferred.
 
