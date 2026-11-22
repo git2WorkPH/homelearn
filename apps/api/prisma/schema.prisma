@@ -107,6 +107,7 @@ model Activity {
   planId      String              @db.VarChar(200)
   title       String              @db.VarChar(500)
   lessonVersionId String?         @db.VarChar(300)
+  catalogLessonRef String?         @db.VarChar(300)
   schedule    Json?
   createdAt   DateTime            @default(now()) @db.Timestamptz(3)
   plan        LearningPlan        @relation(fields: [planId], references: [id], onDelete: Restrict)
@@ -115,6 +116,7 @@ model Activity {
   lessonVersion LessonVersion?    @relation(fields: [lessonVersionId], references: [id], onDelete: Restrict)
   @@index([familyId, planId])
   @@index([lessonVersionId])
+  @@index([catalogLessonRef])
 }
 
 model ActivityAssignment {
@@ -153,6 +155,7 @@ model LearnerLearningRecord {
   observation           String?            @db.Text
   completed             Boolean
   lessonVersionId       String?            @db.VarChar(300)
+  catalogLessonRef      String?            @db.VarChar(300)
   curriculumVersionId   String?            @db.VarChar(240)
   configurationSnapshot Json?
   experience            LearningExperience @relation(fields: [experienceId], references: [id], onDelete: Restrict)
@@ -161,6 +164,7 @@ model LearnerLearningRecord {
   @@unique([experienceId, learnerId])
   @@index([learnerId])
   @@index([lessonVersionId])
+  @@index([catalogLessonRef])
 }
 
 model OutcomeAssessment {

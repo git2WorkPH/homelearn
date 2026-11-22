@@ -1,5 +1,19 @@
 # Change log and justification
 
+## 23 November 2026 — K–3 starter lesson catalogue implementation
+
+Authorisation: user approved the first catalogue implementation slice and requested to review the implementation before deciding next steps. See [change justification](k-3-starter-lesson-catalogue.md).
+
+Changes: add a source-controlled versioned pack with 56 original K–3 draft lessons across seven learning areas, K–12 catalogue and coverage API, mobile browse/search/filter/detail flow, and optional versioned references from activities and learning records. Every lesson is identified as needing parent review; uncovered levels and areas remain visible. Add Prisma migration `0003_catalogue_lesson_references`; it has not been applied.
+
+Validation: API/mobile typecheck, Oxlint, API build, iOS Expo export, Prisma client generation and `git diff --check` pass. No test suites were run in this execution. No commit, push or migration deployment was performed.
+
+Limitations: the 56 lessons are drafts awaiting parent review, coverage is not editorially verified, K–4–12 lesson authoring/content remains outstanding, Languages content awaits a language choice, and no NSW syllabus mapping or compliance claim is included. Authentication and family authorization remain deferred.
+
+### Follow-up — Bible-inspired lesson direction
+
+User direction: make the K–3 starter lessons Bible-inspired and use passage references with child-friendly paraphrases, without quoting a translation. Update pack to `2026.2`; add a visible Bible connection and reflection prompt to each lesson. This framing supplements each subject lesson; all content still needs parent review. See the follow-up in [the catalogue change rationale](k-3-starter-lesson-catalogue.md).
+
 ## 22 November 2026 — Create lessons and link them with family experiences
 
 Authorization: user asked to implement the lesson/family experience prototype, clarified that HomeLearn should provide its own Chalkie-like lesson creation (no Chalkie connection), selected manual authoring first, then requested AI generation as well.

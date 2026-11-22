@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from 'react';
-import { Button, ScrollView, StyleSheet, Switch, Text, TextInput, View } from 'react-native';
+import { Button, Pressable, ScrollView, StyleSheet, Switch, Text, TextInput, View } from 'react-native';
 import { HomeLearnPrototype } from './prototype';
 
 const apiUrl = process.env.EXPO_PUBLIC_API_URL ?? 'http://127.0.0.1:3000';
@@ -9,10 +9,13 @@ const assessmentJudgements = ['emerging', 'developing', 'demonstrated', 'not-ass
 type Judgement = typeof assessmentJudgements[number];
 type Plan = { id: string; title: string; startsOn: string; endsOn: string };
 type Schedule = { startsAt: string; endsAt: string; timeZone: string };
-type Activity = { id: string; planId: string; title: string; learnerIds: string[]; lessonVersionId?: string; schedule?: Schedule; scheduleHistory?: readonly unknown[] };
+type Activity = { id: string; planId: string; title: string; learnerIds: string[]; lessonVersionId?: string; catalogLessonRef?: string; schedule?: Schedule; scheduleHistory?: readonly unknown[] };
 type Experience = { id: string; title: string; happenedAt: string; activityId?: string };
 type LessonVersion = { id: string; lessonKey: string; familyId: string; versionLabel: string; title: string; subject: string; strand: string; learningLevel: string; learningGoal: string; successCriteria: string[]; description?: string; materials: string[]; steps: string[]; adaptation?: string; estimatedMinutes?: number; creationMethod: 'manual' | 'ai-generated'; aiProvider?: string; aiModel?: string; parentApprovedAt?: string; createdAt: string };
-type LearningRecord = { id: string; experienceId: string; learnerId: string; completed: boolean; observation?: string; lessonVersionId?: string; curriculumVersionId?: string };
+type LearningRecord = { id: string; experienceId: string; learnerId: string; completed: boolean; observation?: string; lessonVersionId?: string; catalogLessonRef?: string; curriculumVersionId?: string };
+type CatalogueLesson = { id: string; reference: string; packId: string; packVersion: string; levelKey: string; levelLabel: string; learningAreaKey: string; learningArea: string; strand: string; title: string; summary: string; learningGoal: string; successCriteria: string[]; materials: string[]; estimatedMinutes: number; steps: string[]; support: string; extension: string; parentPrompt: string; bibleConnection: { reference: string; paraphrase: string; reflectionPrompt: string }; safetyAndAccess: string; provenance: string; editorialStatus: 'needs-parent-review'; jurisdictionMapping: null };
+type CatalogueCoverageCell = { levelKey: string; levelLabel: string; learningAreaKey: string; learningArea: string; targetLessonCount: number; draftLessonCount: number; reviewedLessonCount: number; status: 'needs-parent-review' | 'not-in-starter-pack' };
+type CatalogueResponse = { pack: { id: string; version: string; title: string; totalLessons: number }; total: number; items: CatalogueLesson[] };
 type Assessment = { id: string; learnerRecordId: string; outcomeId: string; assessedAt: string; judgement: Judgement; rationale?: string };
 
 async function request<T>(path: string, body?: unknown, method = 'POST'): Promise<T> {
@@ -42,17 +45,23 @@ async function loadAssessments(records: readonly LearningRecord[]): Promise<Asse
 
 export default function App() {
   const [showLocalApi, setShowLocalApi] = useState(false);
+  const [startAtCatalogue, setStartAtCatalogue] = useState(false);
   return showLocalApi
-    ? <LocalApiWorkflow onBackToPrototype={() => setShowLocalApi(false)} />
-    : <HomeLearnPrototype onOpenApi={() => setShowLocalApi(true)} />;
+    ? <LocalApiWorkflow initialScreen={startAtCatalogue ? 'catalogue' : 'workspace'} onBackToPrototype={() => setShowLocalApi(false)} />
+    : <HomeLearnPrototype
+      onOpenApi={() => { setStartAtCatalogue(false); setShowLocalApi(true); }}
+      onOpenCatalogue={() => { setStartAtCatalogue(true); setShowLocalApi(true); }}
+    />;
 }
 
-function LocalApiWorkflow({ onBackToPrototype }: { readonly onBackToPrototype: () => void }) {
+function LocalApiWorkflow({ initialScreen, onBackToPrototype }: { readonly initialScreen: 'workspace' | 'catalogue'; readonly onBackToPrototype: () => void }) {
   const [plans, setPlans] = useState<Plan[]>([]);
   const [activities, setActivities] = useState<Activity[]>([]);
   const [experiences, setExperiences] = useState<Experience[]>([]);
   const [records, setRecords] = useState<LearningRecord[]>([]);
   const [lessonVersions, setLessonVersions] = useState<LessonVersion[]>([]);
+  const [catalogueLessons, setCatalogueLessons] = useState<CatalogueLesson[]>([]);
+  const [catalogueCoverage, setCatalogueCoverage] = useState<CatalogueCoverageCell[]>([]);
   const [assessments, setAssessments] = useState<Assessment[]>([]);
   const [planTitle, setPlanTitle] = useState('Learning this week');
   const [selectedPlanId, setSelectedPlanId] = useState('');
@@ -64,8 +73,10 @@ function LocalApiWorkflow({ onBackToPrototype }: { readonly onBackToPrototype: (
   const [timeZone, setTimeZone] = useState('Australia/Sydney');
   const [editingActivityId, setEditingActivityId] = useState<string>();
   const [activityLessonVersionId, setActivityLessonVersionId] = useState('');
+  const [activityCatalogLessonRef, setActivityCatalogLessonRef] = useState('');
   const [recordActivityId, setRecordActivityId] = useState('');
   const [recordLessonVersionId, setRecordLessonVersionId] = useState<string | null | undefined>(undefined);
+  const [recordCatalogLessonRef, setRecordCatalogLessonRef] = useState<string | null | undefined>(undefined);
   const [lessonTitle, setLessonTitle] = useState('');
   const [lessonSubject, setLessonSubject] = useState('English');
   const [lessonStrand, setLessonStrand] = useState('');
@@ -88,17 +99,25 @@ function LocalApiWorkflow({ onBackToPrototype }: { readonly onBackToPrototype: (
   const [observationDrafts, setObservationDrafts] = useState<Record<string, string>>({});
   const [outcomeDrafts, setOutcomeDrafts] = useState<Record<string, string>>({});
   const [judgementDrafts, setJudgementDrafts] = useState<Record<string, Judgement>>({});
+  const [screen, setScreen] = useState<'workspace' | 'catalogue' | 'coverage'>(initialScreen);
+  const [catalogueLevel, setCatalogueLevel] = useState('kindergarten');
+  const [catalogueArea, setCatalogueArea] = useState('all');
+  const [catalogueSearch, setCatalogueSearch] = useState('');
+  const [selectedCatalogueLessonRef, setSelectedCatalogueLessonRef] = useState('');
+  const [catalogueActivityDraft, setCatalogueActivityDraft] = useState('');
   const [message, setMessage] = useState('');
   const [busy, setBusy] = useState(false);
 
   const refresh = useCallback(async () => {
     try {
-      const [nextPlans, nextActivities, nextExperiences, nextRecords, nextLessons] = await Promise.all([
+      const [nextPlans, nextActivities, nextExperiences, nextRecords, nextLessons, nextCatalogue, nextCoverage] = await Promise.all([
         request<Plan[]>('/api/v1/plans'),
         request<Activity[]>('/api/v1/activities'),
         request<Experience[]>('/api/v1/learning-experiences'),
         request<LearningRecord[]>('/api/v1/learner-records'),
         request<LessonVersion[]>(`/api/v1/lesson-versions?familyId=${encodeURIComponent(familyId)}`, undefined, 'GET'),
+        request<CatalogueResponse>('/api/v1/catalogue/lessons', undefined, 'GET'),
+        request<{ cells: CatalogueCoverageCell[] }>('/api/v1/catalogue/coverage', undefined, 'GET'),
       ]);
       const nextAssessments = await loadAssessments(nextRecords);
       setPlans(nextPlans);
@@ -106,6 +125,8 @@ function LocalApiWorkflow({ onBackToPrototype }: { readonly onBackToPrototype: (
       setExperiences(nextExperiences);
       setRecords(nextRecords);
       setLessonVersions(nextLessons);
+      setCatalogueLessons(nextCatalogue.items);
+      setCatalogueCoverage(nextCoverage.cells);
       setAssessments(nextAssessments);
       setSelectedPlanId(current => current || nextPlans[0]?.id || '');
       setMessage('');
@@ -141,6 +162,7 @@ function LocalApiWorkflow({ onBackToPrototype }: { readonly onBackToPrototype: (
     setActivityTitle('');
     setActivityLearners(learnerId);
     setActivityLessonVersionId('');
+    setActivityCatalogLessonRef('');
     setIsScheduled(false);
   };
 
@@ -150,6 +172,7 @@ function LocalApiWorkflow({ onBackToPrototype }: { readonly onBackToPrototype: (
     setActivityTitle(activity.title);
     setActivityLearners(activity.learnerIds.join(', '));
     setActivityLessonVersionId(activity.lessonVersionId ?? '');
+    setActivityCatalogLessonRef(activity.catalogLessonRef ?? '');
     setIsScheduled(activity.schedule !== undefined);
     if (activity.schedule !== undefined) {
       setStartsAt(activity.schedule.startsAt);
@@ -167,11 +190,13 @@ function LocalApiWorkflow({ onBackToPrototype }: { readonly onBackToPrototype: (
         id: id(), familyId, planId: selectedPlanId, title: activityTitle.trim(), learnerIds: learners,
         ...(schedule === undefined ? {} : { schedule }),
         ...(activityLessonVersionId === '' ? {} : { lessonVersionId: activityLessonVersionId }),
+        ...(activityCatalogLessonRef === '' ? {} : { catalogLessonRef: activityCatalogLessonRef }),
       });
     } else {
       await request(`/api/v1/activities/${encodeURIComponent(editingActivityId)}`, {
         title: activityTitle.trim(), learnerIds: learners, schedule: schedule ?? null,
         lessonVersionId: activityLessonVersionId || null,
+        catalogLessonRef: activityCatalogLessonRef || null,
         changedAt: new Date().toISOString(), changedBy: 'adult-local',
       }, 'PATCH');
     }
@@ -184,6 +209,7 @@ function LocalApiWorkflow({ onBackToPrototype }: { readonly onBackToPrototype: (
     const experienceId = id();
     const selectedActivity = activities.find(activity => activity.id === recordActivityId);
     const linkedLessonVersionId = recordLessonVersionId === null ? undefined : recordLessonVersionId ?? selectedActivity?.lessonVersionId;
+    const linkedCatalogLessonRef = recordCatalogLessonRef === null ? undefined : recordCatalogLessonRef ?? selectedActivity?.catalogLessonRef;
     await request('/api/v1/learning-experiences', {
       id: experienceId, familyId, happenedAt: new Date().toISOString(), title: experienceTitle.trim(),
       ...(selectedActivity === undefined ? {} : { activityId: selectedActivity.id }),
@@ -191,12 +217,14 @@ function LocalApiWorkflow({ onBackToPrototype }: { readonly onBackToPrototype: (
     await request('/api/v1/learner-records', {
       id: id(), experienceId, learnerId: recordLearnerId.trim(), completed: false,
       ...(linkedLessonVersionId === undefined ? {} : { lessonVersionId: linkedLessonVersionId }),
+      ...(linkedCatalogLessonRef === undefined ? {} : { catalogLessonRef: linkedCatalogLessonRef }),
       ...(recordObservation.trim() === '' ? {} : { observation: recordObservation.trim() }),
       ...(curriculumVersionId.trim() === '' ? {} : { curriculumVersionId: curriculumVersionId.trim(), configurationSnapshot: { sourceKind: 'family-defined' } }),
     });
     setRecordObservation('');
     setRecordActivityId('');
     setRecordLessonVersionId(undefined);
+    setRecordCatalogLessonRef(undefined);
     await refresh();
   }, 'Could not save the learning record. Check the learner ID and local API.');
 
@@ -245,6 +273,7 @@ function LocalApiWorkflow({ onBackToPrototype }: { readonly onBackToPrototype: (
   };
   const selectedRecordActivity = activities.find(activity => activity.id === recordActivityId);
   const visibleRecordLessonId = recordLessonVersionId === null ? undefined : recordLessonVersionId ?? selectedRecordActivity?.lessonVersionId;
+  const visibleRecordCatalogRef = recordCatalogLessonRef === null ? undefined : recordCatalogLessonRef ?? selectedRecordActivity?.catalogLessonRef;
 
   const saveObservation = (record: LearningRecord) => withBusy(async () => {
     const observation = observationDrafts[record.id] ?? record.observation ?? '';
@@ -270,12 +299,64 @@ function LocalApiWorkflow({ onBackToPrototype }: { readonly onBackToPrototype: (
     });
   };
 
+  const selectedCatalogueLesson = catalogueLessons.find(lesson => lesson.reference === selectedCatalogueLessonRef);
+  const filteredCatalogueLessons = catalogueLessons.filter(lesson =>
+    lesson.levelKey === catalogueLevel &&
+    (catalogueArea === 'all' || lesson.learningAreaKey === catalogueArea) &&
+    `${lesson.title} ${lesson.strand} ${lesson.summary} ${lesson.learningGoal}`.toLocaleLowerCase('en-AU').includes(catalogueSearch.trim().toLocaleLowerCase('en-AU')),
+  );
+
+  const addCatalogueLessonToPlan = () => withBusy(async () => {
+    if (selectedCatalogueLesson === undefined) throw new Error('Choose a starter lesson first.');
+    let plan = plans.find(item => item.id === selectedPlanId) ?? plans[0];
+    if (plan === undefined) {
+      const start = new Date();
+      start.setDate(start.getDate() - ((start.getDay() + 6) % 7));
+      const end = new Date(start);
+      end.setDate(start.getDate() + 6);
+      plan = await request<Plan>('/api/v1/plans', {
+        id: id(), familyId, title: planTitle.trim() || 'Learning this week',
+        startsOn: start.toISOString().slice(0, 10), endsOn: end.toISOString().slice(0, 10), status: 'active',
+      });
+    }
+    const title = catalogueActivityDraft.trim() || selectedCatalogueLesson.title;
+    await request<Activity>('/api/v1/activities', {
+      id: id(), familyId, planId: plan.id, title,
+      learnerIds: activityLearners.split(',').map(value => value.trim()).filter(Boolean),
+      catalogLessonRef: selectedCatalogueLesson.reference,
+    });
+    await refresh();
+    setScreen('workspace');
+    setMessage(`Added “${title}” to the weekly plan. The starter lesson is still marked for your review.`);
+  }, 'Could not add this starter lesson to the weekly plan. Check the local API.');
+
   return <ScrollView contentContainerStyle={styles.page}><View style={styles.content}>
     <Button title="← Back to product prototype" onPress={onBackToPrototype} />
     <Text accessibilityRole="header" style={styles.title}>HomeLearn</Text>
     <Text style={styles.body}>Plan learning and record what happens. Local demo uses synthetic family and learner IDs only.</Text>
+    <View style={styles.navigation}>
+      <Button title="Learning workspace" onPress={() => setScreen('workspace')} />
+      <Button title={`Starter catalogue (${catalogueLessons.length})`} onPress={() => setScreen('catalogue')} />
+      <Button title="Coverage" onPress={() => setScreen('coverage')} />
+    </View>
     {message ? <Text accessibilityRole="alert" style={styles.message}>{message}</Text> : null}
 
+    {screen === 'catalogue' ? <CatalogueBrowser
+      lessons={filteredCatalogueLessons}
+      coverage={catalogueCoverage}
+      level={catalogueLevel}
+      learningArea={catalogueArea}
+      search={catalogueSearch}
+      selectedLesson={selectedCatalogueLesson}
+      activityTitle={catalogueActivityDraft}
+      onSelectLevel={setCatalogueLevel}
+      onSelectArea={setCatalogueArea}
+      onSearch={setCatalogueSearch}
+      onSelectLesson={lesson => { setSelectedCatalogueLessonRef(lesson.reference); setCatalogueActivityDraft(lesson.title); }}
+      onActivityTitleChange={setCatalogueActivityDraft}
+      onUseLesson={addCatalogueLessonToPlan}
+      busy={busy}
+    /> : screen === 'coverage' ? <CatalogueCoverageView cells={catalogueCoverage} /> : <>
     <Text accessibilityRole="header" style={styles.heading}>Family lesson workshop</Text>
     <Text style={styles.body}>Write an original lesson for any subject and learning level. Local AI can prepare a draft; review it before saving. Keep learner names and personal details out of AI topics.</Text>
     <TextInput accessibilityLabel="Lesson title" style={styles.input} placeholder="Lesson title" value={lessonTitle} onChangeText={editLessonField(setLessonTitle)} />
@@ -314,7 +395,9 @@ function LocalApiWorkflow({ onBackToPrototype }: { readonly onBackToPrototype: (
     <TextInput accessibilityLabel="Activity title" style={styles.input} placeholder="Activity title" value={activityTitle} onChangeText={setActivityTitle} />
     <TextInput accessibilityLabel="Learner IDs" style={styles.input} placeholder="Learner IDs, comma separated" value={activityLearners} onChangeText={setActivityLearners} />
     <Text style={styles.body}>Lesson version: {lessonVersions.find(lesson => lesson.id === activityLessonVersionId)?.title ?? 'None selected'}</Text>
+    {activityCatalogLessonRef ? <Text style={styles.body}>Catalogue lesson: {catalogueLessons.find(lesson => lesson.reference === activityCatalogLessonRef)?.title ?? activityCatalogLessonRef}</Text> : null}
     <Button title="Clear activity lesson" disabled={busy || activityLessonVersionId === ''} onPress={() => setActivityLessonVersionId('')} />
+    <Button title="Clear catalogue lesson" disabled={busy || activityCatalogLessonRef === ''} onPress={() => setActivityCatalogLessonRef('')} />
     <View style={styles.row}><Text style={styles.body}>Schedule this activity</Text><Switch accessibilityLabel="Schedule this activity" value={isScheduled} onValueChange={setIsScheduled} /></View>
     {isScheduled ? <>
       <TextInput accessibilityLabel="Starts at" style={styles.input} value={startsAt} onChangeText={setStartsAt} />
@@ -325,10 +408,11 @@ function LocalApiWorkflow({ onBackToPrototype }: { readonly onBackToPrototype: (
     {editingActivityId !== undefined ? <Button title="Cancel editing" disabled={busy} onPress={resetActivityForm} /> : null}
     {activities.map(activity => <View key={activity.id} style={styles.card}>
       <Text style={styles.item}>{activity.title} · {activity.learnerIds.join(', ')} · {activity.schedule === undefined ? 'flexible' : 'scheduled'}</Text>
-      {activity.lessonVersionId ? <Text style={styles.body}>Lesson: {lessonVersions.find(lesson => lesson.id === activity.lessonVersionId)?.title ?? activity.lessonVersionId}</Text> : null}
+      {activity.lessonVersionId ? <Text style={styles.body}>Family lesson: {lessonVersions.find(lesson => lesson.id === activity.lessonVersionId)?.title ?? activity.lessonVersionId}</Text> : null}
+      {activity.catalogLessonRef ? <Text style={styles.body}>Starter lesson: {catalogueLessons.find(lesson => lesson.reference === activity.catalogLessonRef)?.title ?? activity.catalogLessonRef}</Text> : null}
       {activity.scheduleHistory?.length ? <Text style={styles.body}>Schedule changes: {activity.scheduleHistory.length}</Text> : null}
       <Button title="Edit activity" disabled={busy} onPress={() => editActivity(activity)} />
-      <Button title="Use for learning record" disabled={busy} onPress={() => { setRecordActivityId(activity.id); setExperienceTitle(activity.title); setRecordLessonVersionId(activity.lessonVersionId); }} />
+      <Button title="Use for learning record" disabled={busy} onPress={() => { setRecordActivityId(activity.id); setExperienceTitle(activity.title); setRecordLessonVersionId(activity.lessonVersionId); setRecordCatalogLessonRef(activity.catalogLessonRef); }} />
     </View>)}
 
     <Text accessibilityRole="header" style={styles.heading}>Learning records</Text>
@@ -339,14 +423,17 @@ function LocalApiWorkflow({ onBackToPrototype }: { readonly onBackToPrototype: (
     <TextInput accessibilityLabel="Observation" style={[styles.input, styles.multiline]} multiline value={recordObservation} onChangeText={setRecordObservation} placeholder="Parent observation (optional)" />
     <TextInput accessibilityLabel="Curriculum version ID" style={styles.input} value={curriculumVersionId} onChangeText={setCurriculumVersionId} placeholder="Parent-defined curriculum version (optional)" />
     <Text style={styles.body}>Lesson version: {lessonVersions.find(lesson => lesson.id === visibleRecordLessonId)?.title ?? 'None selected'}</Text>
+    {visibleRecordCatalogRef ? <Text style={styles.body}>Starter lesson reference: {catalogueLessons.find(lesson => lesson.reference === visibleRecordCatalogRef)?.title ?? visibleRecordCatalogRef}</Text> : null}
     <Button title="Clear experience lesson" disabled={busy || visibleRecordLessonId === undefined} onPress={() => setRecordLessonVersionId(null)} />
+    <Button title="Clear starter lesson" disabled={busy || visibleRecordCatalogRef === undefined} onPress={() => setRecordCatalogLessonRef(null)} />
     <Button title="Record unplanned learning" disabled={busy} onPress={() => void recordLearning()} />
     {experiences.map(experience => <View key={experience.id} style={styles.card}>
       <Text style={styles.item}>{experience.title} · {new Date(experience.happenedAt).toLocaleDateString()}</Text>
       {experience.activityId ? <Text style={styles.body}>Planned activity: {activities.find(activity => activity.id === experience.activityId)?.title ?? experience.activityId}</Text> : null}
       {records.filter(record => record.experienceId === experience.id).map(record => <View key={record.id} style={styles.record}>
         <Text style={styles.body}>{record.learnerId} · {record.completed ? 'Activity completed' : 'Learning recorded; activity completion not marked'}</Text>
-        {record.lessonVersionId ? <Text style={styles.body}>K–12 lesson · {lessonVersions.find(lesson => lesson.id === record.lessonVersionId)?.title ?? record.lessonVersionId}</Text> : null}
+        {record.lessonVersionId ? <Text style={styles.body}>Family lesson · {lessonVersions.find(lesson => lesson.id === record.lessonVersionId)?.title ?? record.lessonVersionId}</Text> : null}
+        {record.catalogLessonRef ? <Text style={styles.body}>K–12 starter lesson · {catalogueLessons.find(lesson => lesson.reference === record.catalogLessonRef)?.title ?? record.catalogLessonRef}</Text> : null}
         <TextInput accessibilityLabel={`Observation for ${record.learnerId}`} style={[styles.input, styles.multiline]} multiline value={observationDrafts[record.id] ?? record.observation ?? ''} onChangeText={value => setObservationDrafts(current => ({ ...current, [record.id]: value }))} placeholder="Parent observation" />
         <Button title="Save observation" disabled={busy} onPress={() => void saveObservation(record)} />
         {record.curriculumVersionId ? <>
@@ -359,12 +446,130 @@ function LocalApiWorkflow({ onBackToPrototype }: { readonly onBackToPrototype: (
       </View>)}
     </View>)}
     <Button title="Refresh" disabled={busy} onPress={() => void refresh()} />
+    </>}
   </View></ScrollView>;
+}
+
+function CatalogueBrowser({
+  lessons, coverage, level, learningArea, search, selectedLesson, activityTitle,
+  onSelectLevel, onSelectArea, onSearch, onSelectLesson, onActivityTitleChange, onUseLesson, busy,
+}: {
+  readonly lessons: readonly CatalogueLesson[];
+  readonly coverage: readonly CatalogueCoverageCell[];
+  readonly level: string;
+  readonly learningArea: string;
+  readonly search: string;
+  readonly selectedLesson: CatalogueLesson | undefined;
+  readonly activityTitle: string;
+  readonly onSelectLevel: (key: string) => void;
+  readonly onSelectArea: (key: string) => void;
+  readonly onSearch: (value: string) => void;
+  readonly onSelectLesson: (lesson: CatalogueLesson) => void;
+  readonly onActivityTitleChange: (value: string) => void;
+  readonly onUseLesson: () => void;
+  readonly busy: boolean;
+}) {
+  const levels = coverage.filter((cell, index, all) => all.findIndex(item => item.levelKey === cell.levelKey) === index);
+  const areas = coverage.filter((cell, index, all) => all.findIndex(item => item.learningAreaKey === cell.learningAreaKey) === index);
+  const selectedCell = coverage.find(cell => cell.levelKey === level && cell.learningAreaKey === learningArea);
+  return <View style={styles.catalogue}>
+    <Text accessibilityRole="header" style={styles.heading}>K–12 lesson catalogue</Text>
+    <Text style={styles.body}>Starter pack · Kindergarten–Year 3 · 56 original lesson drafts. The rest of K–12 is shown as a coverage gap.</Text>
+    <View style={styles.notice}>
+      <Text style={styles.noticeTitle}>For parent review</Text>
+      <Text style={styles.body}>These original starter lessons are drafts for your review. Check and adapt each lesson before using it. No NSW syllabus mapping is included.</Text>
+    </View>
+    <Text style={styles.filterLabel}>LEARNING LEVEL</Text>
+    <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.chips}>
+      {levels.map(item => <Pressable key={item.levelKey} accessibilityRole="button" accessibilityState={{ selected: level === item.levelKey }} onPress={() => onSelectLevel(item.levelKey)} style={[styles.chip, level === item.levelKey && styles.chipSelected]}>
+        <Text style={[styles.chipText, level === item.levelKey && styles.chipTextSelected]}>{item.levelLabel}</Text>
+      </Pressable>)}
+    </ScrollView>
+    <Text style={styles.filterLabel}>LEARNING AREA</Text>
+    <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.chips}>
+      <Pressable accessibilityRole="button" accessibilityState={{ selected: learningArea === 'all' }} onPress={() => onSelectArea('all')} style={[styles.chip, learningArea === 'all' && styles.chipSelected]}>
+        <Text style={[styles.chipText, learningArea === 'all' && styles.chipTextSelected]}>All areas</Text>
+      </Pressable>
+      {areas.map(item => <Pressable key={item.learningAreaKey} accessibilityRole="button" accessibilityState={{ selected: learningArea === item.learningAreaKey }} onPress={() => onSelectArea(item.learningAreaKey)} style={[styles.chip, learningArea === item.learningAreaKey && styles.chipSelected]}>
+        <Text style={[styles.chipText, learningArea === item.learningAreaKey && styles.chipTextSelected]}>{item.learningArea}</Text>
+      </Pressable>)}
+    </ScrollView>
+    <TextInput accessibilityLabel="Search starter lessons" style={styles.input} placeholder="Search titles, topics or goals" value={search} onChangeText={onSearch} />
+    {selectedCell ? <Text style={styles.coverageLine}>
+      {selectedCell.status === 'needs-parent-review'
+        ? `${selectedCell.draftLessonCount} starter lessons · ${selectedCell.reviewedLessonCount} reviewed · target ${selectedCell.targetLessonCount}`
+        : 'No starter lessons for this level and area yet. This gap is intentional and visible.'}
+    </Text> : null}
+    {lessons.length === 0
+      ? <View style={styles.card}><Text style={styles.body}>No matching lessons in this starter pack.</Text></View>
+      : lessons.map(lesson => <Pressable key={lesson.reference} accessibilityRole="button" onPress={() => onSelectLesson(lesson)} style={[styles.lessonCard, selectedLesson?.reference === lesson.reference && styles.selectedLessonCard]}>
+        <Text style={styles.lessonArea}>{lesson.learningArea} · {lesson.strand}</Text>
+        <Text style={styles.item}>{lesson.title}</Text>
+        <Text style={styles.body}>{lesson.summary}</Text>
+        <Text style={styles.reviewLabel}>Needs parent review · {lesson.estimatedMinutes} minutes</Text>
+      </Pressable>)}
+    {selectedLesson ? <View style={styles.detailCard}>
+      <Text accessibilityRole="header" style={styles.heading}>{selectedLesson.title}</Text>
+      <Text style={styles.body}>{selectedLesson.levelLabel} · {selectedLesson.learningArea} · {selectedLesson.strand}</Text>
+      <Text style={styles.sectionLabel}>LEARNING GOAL</Text>
+      <Text style={styles.body}>{selectedLesson.learningGoal}</Text>
+      <Text style={styles.sectionLabel}>SUCCESS CRITERIA</Text>
+      {selectedLesson.successCriteria.map(criterion => <Text key={criterion} style={styles.body}>• {criterion}</Text>)}
+      <Text style={styles.sectionLabel}>MATERIALS</Text>
+      {selectedLesson.materials.map(material => <Text key={material} style={styles.body}>• {material}</Text>)}
+      <Text style={styles.sectionLabel}>LESSON STEPS</Text>
+      {selectedLesson.steps.map((step, index) => <Text key={step} style={styles.body}>{index + 1}. {step}</Text>)}
+      <Text style={styles.sectionLabel}>SUPPORT AND EXTENSION</Text>
+      <Text style={styles.body}>Support · {selectedLesson.support}</Text>
+      <Text style={styles.body}>Extension · {selectedLesson.extension}</Text>
+      <Text style={styles.sectionLabel}>ASK OR WONDER</Text>
+      <Text style={styles.body}>{selectedLesson.parentPrompt}</Text>
+      <View style={styles.bibleConnection}>
+        <Text style={styles.sectionLabel}>BIBLE CONNECTION</Text>
+        <Text style={styles.reviewLabel}>{selectedLesson.bibleConnection.reference}</Text>
+        <Text style={styles.body}>{selectedLesson.bibleConnection.paraphrase}</Text>
+        <Text style={styles.body}>{selectedLesson.bibleConnection.reflectionPrompt}</Text>
+        <Text style={styles.caption}>Child-friendly paraphrase; no Bible translation wording is quoted.</Text>
+      </View>
+      <Text style={styles.reviewLabel}>{selectedLesson.safetyAndAccess}</Text>
+      <TextInput accessibilityLabel="Adapted family activity title" style={styles.input} value={activityTitle} onChangeText={onActivityTitleChange} placeholder="Name the activity for your family" />
+      <Button title="Use this lesson in the weekly plan" disabled={busy} onPress={onUseLesson} />
+      <Text style={styles.body}>The activity keeps a reference to this exact starter-pack version. Recording an activity does not mark a goal as mastered.</Text>
+    </View> : null}
+  </View>;
+}
+
+function CatalogueCoverageView({ cells }: { readonly cells: readonly CatalogueCoverageCell[] }) {
+  const levels = cells.filter((cell, index, all) => all.findIndex(item => item.levelKey === cell.levelKey) === index);
+  const areas = cells.filter((cell, index, all) => all.findIndex(item => item.learningAreaKey === cell.learningAreaKey) === index);
+  const lessonDrafts = cells.reduce((total, cell) => total + cell.draftLessonCount, 0);
+  return <View style={styles.catalogue}>
+    <Text accessibilityRole="header" style={styles.heading}>Catalogue coverage</Text>
+    <Text style={styles.body}>{lessonDrafts} starter lessons across {levels.slice(0, 4).map(level => level.levelLabel).join(', ')}. None have been marked reviewed. The catalogue does not claim complete topic coverage.</Text>
+    {levels.map(level => <View key={level.levelKey} style={styles.levelCoverage}>
+      <Text accessibilityRole="header" style={styles.coverageTitle}>{level.levelLabel}</Text>
+      {areas.map(area => {
+        const cell = cells.find(item => item.levelKey === level.levelKey && item.learningAreaKey === area.learningAreaKey);
+        if (cell === undefined) return null;
+        return <View key={cell.learningAreaKey} style={styles.coverageCell}>
+          <Text style={styles.coverageArea}>{cell.learningArea}</Text>
+          <Text style={styles.coverageStatus}>{cell.status === 'needs-parent-review'
+            ? `${cell.reviewedLessonCount} reviewed · ${cell.draftLessonCount} need review · target ${cell.targetLessonCount}`
+            : 'Not in the first content pack'}</Text>
+        </View>;
+      })}
+    </View>)}
+    <View style={styles.notice}>
+      <Text style={styles.noticeTitle}>Scope reminder</Text>
+      <Text style={styles.body}>One or two starter lessons do not mean a learning area or year level is complete. Languages stay in the catalogue taxonomy; shared language lessons need a family-selected language pack.</Text>
+    </View>
+  </View>;
 }
 
 const styles = StyleSheet.create({
   page: { flexGrow: 1, padding: 24, backgroundColor: '#f7f5ef' },
   content: { width: '100%', maxWidth: 720, alignSelf: 'center', gap: 14 },
+  navigation: { flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'space-between', gap: 4 },
   title: { fontSize: 36, fontWeight: '700', color: '#183e36' },
   heading: { fontSize: 24, fontWeight: '600', color: '#183e36', marginTop: 12 },
   body: { fontSize: 16, lineHeight: 24, color: '#253b36' },
@@ -375,4 +580,27 @@ const styles = StyleSheet.create({
   card: { padding: 12, borderRadius: 8, backgroundColor: '#fff', gap: 8 },
   row: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 8 },
   record: { borderTopWidth: 1, borderTopColor: '#d2d8d4', paddingTop: 12, gap: 8 },
+  catalogue: { gap: 12 },
+  chips: { flexDirection: 'row', gap: 8, paddingVertical: 4 },
+  chip: { borderWidth: 1, borderColor: '#9ba8a2', borderRadius: 18, paddingHorizontal: 12, paddingVertical: 8, backgroundColor: '#fff' },
+  chipSelected: { backgroundColor: '#285b4e', borderColor: '#285b4e' },
+  chipText: { color: '#37524a', fontSize: 13 },
+  chipTextSelected: { color: '#fff' },
+  filterLabel: { fontSize: 12, fontWeight: '700', color: '#52645c', letterSpacing: 1 },
+  notice: { borderRadius: 10, padding: 14, backgroundColor: '#f2eadc', gap: 6 },
+  noticeTitle: { color: '#69573d', fontSize: 16, fontWeight: '700' },
+  coverageLine: { color: '#52645c', fontSize: 14, fontWeight: '700' },
+  lessonCard: { padding: 14, borderRadius: 10, backgroundColor: '#fff', gap: 5, borderWidth: 1, borderColor: '#e0e4dd' },
+  selectedLessonCard: { borderColor: '#4f7b66', borderWidth: 2 },
+  lessonArea: { color: '#678371', fontSize: 12, fontWeight: '700' },
+  reviewLabel: { color: '#846842', fontSize: 13, fontWeight: '600', lineHeight: 19 },
+  detailCard: { padding: 16, borderRadius: 12, backgroundColor: '#fff', gap: 8 },
+  bibleConnection: { padding: 12, borderRadius: 10, backgroundColor: '#f2eadc', gap: 6 },
+  caption: { color: '#68756d', fontSize: 12, lineHeight: 18 },
+  sectionLabel: { color: '#52645c', fontSize: 12, fontWeight: '800', marginTop: 8, letterSpacing: 1 },
+  levelCoverage: { padding: 12, borderRadius: 10, backgroundColor: '#fff', gap: 4 },
+  coverageTitle: { color: '#183e36', fontSize: 18, fontWeight: '700', marginBottom: 4 },
+  coverageCell: { borderTopWidth: 1, borderTopColor: '#e1e6df', paddingVertical: 8, gap: 3 },
+  coverageArea: { color: '#37524a', fontSize: 14, fontWeight: '600' },
+  coverageStatus: { color: '#76857d', fontSize: 12 },
 });

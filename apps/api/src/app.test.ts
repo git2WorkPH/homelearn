@@ -68,9 +68,10 @@ test('creates family lesson versions and links them to planning and learning rec
     const activity = await app.inject({ method: 'POST', url: '/api/v1/activities', payload: {
       id: 'synthetic-activity-a', familyId, planId: 'synthetic-plan-a', title: 'Pattern walk',
       learnerIds: ['synthetic-learner-a'], lessonVersionId,
+      catalogLessonRef: 'homelearn-k3-starter@2026.2:kindergarten:mathematics:count-and-group',
     } });
     expect(activity.statusCode).toBe(201);
-    expect(activity.json()).toMatchObject({ lessonVersionId });
+    expect(activity.json()).toMatchObject({ lessonVersionId, catalogLessonRef: 'homelearn-k3-starter@2026.2:kindergarten:mathematics:count-and-group' });
 
     const experience = await app.inject({ method: 'POST', url: '/api/v1/learning-experiences', payload: {
       id: 'synthetic-experience-a', familyId, happenedAt: '2026-11-24T03:00:00Z', title: 'Pattern walk together', activityId: 'synthetic-activity-a',
@@ -79,9 +80,10 @@ test('creates family lesson versions and links them to planning and learning rec
     const record = await app.inject({ method: 'POST', url: '/api/v1/learner-records', payload: {
       id: 'synthetic-record-a', experienceId: 'synthetic-experience-a', learnerId: 'synthetic-learner-a',
       completed: false, lessonVersionId,
+      catalogLessonRef: 'homelearn-k3-starter@2026.2:kindergarten:mathematics:count-and-group',
     } });
     expect(record.statusCode).toBe(201);
-    expect(record.json()).toMatchObject({ lessonVersionId, completed: false });
+    expect(record.json()).toMatchObject({ lessonVersionId, catalogLessonRef: 'homelearn-k3-starter@2026.2:kindergarten:mathematics:count-and-group', completed: false });
 
     const unapprovedAiLesson = await app.inject({ method: 'POST', url: '/api/v1/lesson-versions', payload: {
       id: 'synthetic-ai-lesson', lessonKey: 'synthetic-ai-lesson', familyId, versionLabel: '1.0',

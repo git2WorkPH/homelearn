@@ -155,7 +155,7 @@ function ActivityCard({ activity, onToggle, onLog }: { readonly activity: DemoAc
   </View>;
 }
 
-export function HomeLearnPrototype({ onOpenApi }: { readonly onOpenApi: () => void }) {
+export function HomeLearnPrototype({ onOpenApi, onOpenCatalogue }: { readonly onOpenApi: () => void; readonly onOpenCatalogue: () => void }) {
   const [activeTab, setActiveTab] = useState<Tab>('home');
   const [mode, setMode] = useState<Mode>('Guided');
   const [learnerFilter, setLearnerFilter] = useState<'All learners' | DemoLearner>('All learners');
@@ -342,6 +342,7 @@ export function HomeLearnPrototype({ onOpenApi }: { readonly onOpenApi: () => vo
         onAddCustomSubject={addCustomSubject}
         onOpenLesson={setSelectedLesson}
         onOpenLessonWorkshop={onOpenApi}
+        onOpenCatalogue={onOpenCatalogue}
       /> : null}
       {activeTab === 'planner' ? <PlannerTab
         weekDays={weekDays}
@@ -521,7 +522,7 @@ function PlannerTab({ weekDays, selectedDay, selectedDate, onChooseDay, learnerF
   </View>;
 }
 
-function LessonsTab({ selectedLevel, onSelectLevel, view, onSelectView, selectedSubject, onSelectSubject, search, onSearch, lessons, customSubjects, customSubject, onCustomSubjectChange, onAddCustomSubject, onOpenLesson, onOpenLessonWorkshop }: {
+function LessonsTab({ selectedLevel, onSelectLevel, view, onSelectView, selectedSubject, onSelectSubject, search, onSearch, lessons, customSubjects, customSubject, onCustomSubjectChange, onAddCustomSubject, onOpenLesson, onOpenLessonWorkshop, onOpenCatalogue }: {
   readonly selectedLevel: string;
   readonly onSelectLevel: (value: string) => void;
   readonly view: 'Browse' | 'Coverage';
@@ -537,6 +538,7 @@ function LessonsTab({ selectedLevel, onSelectLevel, view, onSelectView, selected
   readonly onAddCustomSubject: () => void;
   readonly onOpenLesson: (lesson: DemoLesson) => void;
   readonly onOpenLessonWorkshop: () => void;
+  readonly onOpenCatalogue: () => void;
 }) {
   const subjectOptions = ['All subjects', ...lessonSubjects, ...customSubjects];
   return <View>
@@ -547,6 +549,11 @@ function LessonsTab({ selectedLevel, onSelectLevel, view, onSelectView, selected
       <Text style={styles.lessonCreateTitle}>Create a family lesson</Text>
       <Text style={styles.lessonCreateText}>Write your own lesson or shape a local AI draft, then use it in your family’s plan and learning record.</Text>
       <Text style={styles.lessonCreateAction}>Open lesson workshop ›</Text>
+    </Pressable>
+    <Pressable accessibilityRole="button" onPress={onOpenCatalogue} style={styles.lessonCreateCard}>
+      <Text style={styles.lessonCreateTitle}>Browse the starter catalogue</Text>
+      <Text style={styles.lessonCreateText}>Explore 56 original Kindergarten–Year 3 lesson drafts, see K–12 coverage gaps and use a selected lesson in your plan.</Text>
+      <Text style={styles.lessonCreateAction}>Open shared lesson library ›</Text>
     </Pressable>
     <Text style={styles.formLabel}>LEARNING LEVEL</Text>
     <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.choiceRow}>

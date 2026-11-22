@@ -92,6 +92,9 @@ test('edits an activity and observation, and records an independent outcome asse
     let response: unknown = [];
     if (url.endsWith('/api/v1/plans')) response = [plan];
     else if (url.endsWith('/api/v1/activities')) response = [activity];
+    else if (url.endsWith('/api/v1/catalogue/lessons')) response = { pack: { id: 'homelearn-k3-starter', version: '2026.2', title: 'Starter lessons', totalLessons: 56 }, total: 56, items: [] };
+    else if (url.endsWith('/api/v1/catalogue/coverage')) response = { cells: [] };
+    else if (url.includes('/api/v1/catalogue/lessons/')) response = {};
     else if (url.includes('/api/v1/lesson-versions?familyId=')) response = [{ ...lesson, id: savedLessonVersionId }];
     else if (url.endsWith('/api/v1/learning-experiences')) response = [experience];
     else if (url.endsWith('/api/v1/learner-records')) response = [record];

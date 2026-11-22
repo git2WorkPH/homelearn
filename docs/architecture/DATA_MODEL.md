@@ -1,6 +1,6 @@
 # Relational data model
 
-Status: Existing planning/learning schema plus an additive family-lesson migration proposed by this change; migration is not applied. Authentication and durable family membership remain deferred.
+Status: Existing planning/learning schema includes family-authored lesson versions from migration `0002_family_lessons`. The new additive catalogue-reference migration `0003_catalogue_lesson_references` is prepared and remains unapplied. Authentication and durable family membership remain deferred.
 
 Use UUID primary keys. Family-owned tables carry non-null family_id. Parent tables expose unique (family_id, id) pairs; child relationships use composite foreign keys to reject cross-family links. Index scoped lookup and timeline paths. Membership is unique by (family_id, user_id).
 
@@ -15,14 +15,14 @@ Use UUID primary keys. Family-owned tables carry non-null family_id. Parent tabl
 | content_packs, coverage_scopes, coverage_items, lesson_review_events | Pack version defines intended topic/level scope and target lesson coverage. Each coverage item records subject/strand/level, status, planned scope, draft/published counts and last review. Review events record status transition, reviewer, date and rationale |
 | learner_goals | Learner to versioned outcome or custom goal |
 | learning_configurations | Validated scope: family, learner, learner-subject or activity; unique scope; schema version |
-| learning_plans, activities, activity_assignments | Assignments join activity and learner uniquely. Activities carry an optional foreign key to the exact lesson version and do not mutate it |
+| learning_plans, activities, activity_assignments | Assignments join activity and learner uniquely. Activities carry optional family lesson-version and shared catalogue references in separate fields; catalogue references identify an immutable source-controlled pack/version/lesson and do not mutate it |
 | activity_schedule_revisions | Previous/new schedule, actor and timestamp |
-| learning_experiences, learning_records | Experience optionally references a planned activity; records belong to individual learners and carry an optional exact lesson-version foreign key, whether planned or discovered through the experience |
+| learning_experiences, learning_records | Experience optionally references a planned activity; records belong to individual learners and carry optional family lesson-version and shared catalogue references, whether planned or discovered through the experience |
 | observations, outcome_assessments | Learner record/goal, author, date, explicit assessment criteria and judgement |
 | evidence, record_evidence, outcome_evidence | Private object metadata and family-consistent associations |
 | report_exports, audit_events | Scoped export lifecycle and minimal change metadata |
 
-Shared published content must be explicitly distinguished from family content, with no family-edit path to shared rows. Family versions are immutable; edits create a new version. “Available” means at least one reviewed lesson exists for the exact level/strand; “complete to defined scope” means all targets in that versioned content plan pass review. Neither status implies official jurisdictional coverage. Lesson completion remains an activity/learning-record concern and is never an outcome assessment. The current migration stores family lesson versions only; shared catalogue authoring, editorial workflow and coverage tables remain deferred.
+Shared catalogue content is immutable, source-controlled and versioned; it remains explicitly separate from family lesson versions. Optional `catalogLessonRef` strings on activities and learner records point to a stable pack/version/lesson reference. Because pack content is not stored in PostgreSQL, the reference has no SQL foreign key; the API validates it against the known catalogue. Historical pack versions must remain resolvable. The new columns/indexes are in migration `0003_catalogue_lesson_references`, pending deployment. Catalogue coverage is a declared target and draft count, not reviewed/official coverage. Lesson completion remains separate from outcome assessment.
 
 Use created_at, updated_at, created_by and appropriate revision counters. Store instants consistently and retain scheduling timezone/local-date semantics. Birth date is optional pending minimisation decision. Validate configuration JSON with versioned schemas; relational ownership and references stay outside opaque JSON.
 

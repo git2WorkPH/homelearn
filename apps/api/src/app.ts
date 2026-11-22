@@ -12,6 +12,8 @@ import { InMemoryLessonRepository } from "./modules/lessons/infrastructure/in-me
 import { PrismaLessonRepository } from "./modules/lessons/infrastructure/prisma-lesson-repository.js";
 import { registerLessonRoutes } from "./modules/lessons/presentation/lesson-routes.js";
 import type { LessonDraftProvider } from "./modules/lessons/index.js";
+import { InMemoryCatalogueRepository } from "./modules/lesson-catalogue/infrastructure/in-memory-catalogue-repository.js";
+import { registerCatalogueRoutes } from "./modules/lesson-catalogue/presentation/catalogue-routes.js";
 import type { PrismaClient } from "./generated/prisma/client.js";
 export function buildApp(
   dependencies: { readonly prisma?: PrismaClient; readonly lessonDraftProvider?: LessonDraftProvider } = {},
@@ -45,7 +47,9 @@ export function buildApp(
   const lessonRepository = dependencies.prisma === undefined
     ? new InMemoryLessonRepository()
     : new PrismaLessonRepository(dependencies.prisma);
+  const catalogueRepository = new InMemoryCatalogueRepository();
   void registerLessonRoutes(app, lessonRepository, dependencies.lessonDraftProvider);
+  void registerCatalogueRoutes(app, catalogueRepository);
   void registerCurriculumRoutes(
     app,
     dependencies.prisma === undefined
@@ -58,6 +62,7 @@ export function buildApp(
       ? new InMemoryPlanningRepository()
       : new PrismaPlanningRepository(dependencies.prisma),
     lessonRepository,
+    catalogueRepository,
   );
   void registerLearningRecordRoutes(
     app,
@@ -65,6 +70,7 @@ export function buildApp(
       ? new InMemoryLearningRecordRepository()
       : new PrismaLearningRecordRepository(dependencies.prisma),
     lessonRepository,
+    catalogueRepository,
   );
   return app;
 }

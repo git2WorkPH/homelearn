@@ -1,6 +1,6 @@
 # Requirements traceability
 
-Status: Updated 20 November 2026. Current verified and partial outcomes are recorded below; pending and deferred criteria remain explicit.
+Status: Updated 23 November 2026. Current verified and partial outcomes are recorded below; pending and deferred criteria remain explicit.
 
 | Requirement | Acceptance | Owning modules | Planned verification |
 |---|---|---|---|
@@ -11,7 +11,7 @@ Status: Updated 20 November 2026. Current verified and partial outcomes are reco
 | FR-005 | AC-007–008 | Learning records | Domain/application/E2E |
 | FR-006 | AC-009–010, AC-013 | Evidence | Real storage integration/security |
 | FR-007 | AC-011, AC-013 | Reporting | Authorisation, PDF content/layout checks |
-| FR-008 | AC-012 | Family lesson authoring, versioning and planning/learning links | Lesson validation, version preservation and parent-selected associations |
+| FR-008 | AC-012 | Shared lesson catalogue, family lesson authoring, planning/learning links | Coverage, stable reference preservation, parent-selected associations and editorial status |
 | FR-009 | AC-016 | Optional local lesson drafting | Ollama adapter validation, prompt minimisation and parent approval |
 | NFR-001–002 | AC-013–014 | All | Isolation and log inspection |
 | NFR-003 | Quality gates | All | Oxlint, typecheck, boundary checker, build |
@@ -37,8 +37,10 @@ FR-004 PARTIAL: plan/activity API and scheduling history are persisted through P
 
 The default Expo view is an interactive, fictional sample-data prototype for Home, Planner, Journal and Progress; its sample edits remain in screen state only. The existing “Local API” view reads plans, activities, experiences, learning records and assessments from the local API and supports plan/activity authoring, observation updates and explicit assessments. Mobile/API behavior has synthetic-fixture coverage; the Prisma-backed API flow has an opt-in PostgreSQL integration test. Offline operation and real-device acceptance remain NOT_STARTED. Evidence/portfolio and authentication/family ownership remain DEFERRED by user direction. See [HL-004C](../changes/HL-004C-planning-learning-workflows.md) and [the interactive prototype record](../changes/planning-learning-visual-prototype.md).
 
-FR-008 design update: subject/strand taxonomy, Kindergarten–Year 12 labels, standard lesson fields, review lifecycle and explicit coverage semantics are specified in [LESSON_CATALOGUE_PLAN.md](LESSON_CATALOGUE_PLAN.md). The local API now persists family-authored lesson versions and lesson-version links; the default sample prototype remains illustrative. Shared catalogue persistence, editorial tools and the complete original content corpus remain deferred under HL-011–HL-013. NSW mappings remain deferred.
+FR-008 design update: subject/strand taxonomy, Kindergarten–Year 12 labels, standard lesson fields, review lifecycle and explicit coverage semantics are specified in [LESSON_CATALOGUE_PLAN.md](LESSON_CATALOGUE_PLAN.md). The local API persists immutable family lesson versions. A separate source-controlled shared catalogue serves pack `homelearn-k3-starter@2026.2` with 56 Bible-inspired K–3 drafts, each with a passage reference and original child-friendly paraphrase; read-only search and K–12 coverage endpoints are available. Mobile supports browse-to-plan and references flow to resulting learning records. Drafts remain unreviewed. Editorial tools and original content across the remaining K–12 scope are pending; NSW mappings remain deferred.
 
 Family-experience lesson linking: the sample prototype supports lesson-first planning and experience-first linking. The local API now supports family-authored immutable lesson versions, optional local AI drafts requiring parent approval, and persisted references from activities and learner records. Full family authorization, version editing UI, multi-lesson links and reviewed K–12 content coverage remain outstanding.
 
-FR-008/FR-009 partial verification: API and mobile synthetic tests cover manual family lesson creation, optional local AI draft output, explicit review before saving and lesson-version references on planned activities and learning records. Prisma generation/schema validation pass. PostgreSQL integration remains SKIPPED and the additive migration remains unapplied; production persistence and end-to-end family authorization are not verified.
+FR-008 catalogue implementation update — 23 November 2026: API/mobile typechecks, Oxlint, API build, iOS Expo export, Prisma client generation and whitespace validation pass for the current changes. Tests were not run in this execution. Migration `0003_catalogue_lesson_references` is pending and no PostgreSQL catalogue-reference integration run has occurred. Existing authentication/family isolation remains deferred; no production use is supported.
+
+Historical 22 November note: migration `0002_family_lessons` was reported unapplied at that time. It was subsequently applied by the user and the PostgreSQL persistence integration test was reported passing in the prior milestone. This does not verify new migration `0003`.

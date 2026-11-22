@@ -37,10 +37,11 @@ postgresTest('persists planning, schedule history, observations, and assessments
 
     const activityResponse = await app.inject({ method: 'POST', url: '/api/v1/activities', payload: {
       id: activityId, familyId, planId, title: 'Synthetic PostgreSQL activity', learnerIds: [learnerId], lessonVersionId,
+      catalogLessonRef: 'homelearn-k3-starter@2026.2:kindergarten:mathematics:count-and-group',
       schedule: { startsAt: '2026-11-24T01:00:00Z', endsAt: '2026-11-24T02:00:00Z', timeZone: 'Australia/Sydney' },
     } });
     expect(activityResponse.statusCode).toBe(201);
-    expect(activityResponse.json()).toMatchObject({ lessonVersionId });
+    expect(activityResponse.json()).toMatchObject({ lessonVersionId, catalogLessonRef: 'homelearn-k3-starter@2026.2:kindergarten:mathematics:count-and-group' });
 
     const rescheduledResponse = await app.inject({ method: 'POST', url: `/api/v1/activities/${activityId}/reschedule`, payload: {
       changedAt: '2026-11-20T00:00:00Z', changedBy: 'test-adult',
@@ -63,10 +64,11 @@ postgresTest('persists planning, schedule history, observations, and assessments
     expect(experienceResponse.statusCode).toBe(201);
     const recordResponse = await app.inject({ method: 'POST', url: '/api/v1/learner-records', payload: {
       id: recordId, experienceId, learnerId, completed: false, lessonVersionId,
+      catalogLessonRef: 'homelearn-k3-starter@2026.2:kindergarten:mathematics:count-and-group',
       curriculumVersionId: 'family-defined:synthetic-v1', configurationSnapshot: { sourceKind: 'family-defined' },
     } });
     expect(recordResponse.statusCode).toBe(201);
-    expect(recordResponse.json()).toMatchObject({ lessonVersionId });
+    expect(recordResponse.json()).toMatchObject({ lessonVersionId, catalogLessonRef: 'homelearn-k3-starter@2026.2:kindergarten:mathematics:count-and-group' });
 
     const observationResponse = await app.inject({ method: 'PATCH', url: `/api/v1/learner-records/${recordId}`, payload: {
       observation: 'Synthetic observation for persistence verification',
