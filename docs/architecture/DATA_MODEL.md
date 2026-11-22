@@ -1,6 +1,6 @@
 # Relational data model
 
-Status: Existing planning/learning schema includes family-authored lesson versions from migration `0002_family_lessons`. The user reports additive catalogue-reference migration `0003_catalogue_lesson_references` has been applied; this session has not independently verified database state. Authentication and durable family membership remain deferred.
+Status: Existing planning/learning schema includes family-authored lesson versions from migration `0002_family_lessons`. The user reported applying additive catalogue-reference migration `0003_catalogue_lesson_references`; the PostgreSQL persistence integration test has now passed against it. Authentication and durable family membership remain deferred.
 
 Use UUID primary keys. Family-owned tables carry non-null family_id. Parent tables expose unique (family_id, id) pairs; child relationships use composite foreign keys to reject cross-family links. Index scoped lookup and timeline paths. Membership is unique by (family_id, user_id).
 
@@ -22,7 +22,7 @@ Use UUID primary keys. Family-owned tables carry non-null family_id. Parent tabl
 | evidence, record_evidence, outcome_evidence | Private object metadata and family-consistent associations |
 | report_exports, audit_events | Scoped export lifecycle and minimal change metadata |
 
-Shared catalogue content is immutable, source-controlled and versioned; it remains explicitly separate from family lesson versions. Optional `catalogLessonRef` strings on activities and learner records point to a stable pack/version/lesson reference. Because pack content is not stored in PostgreSQL, the reference has no SQL foreign key; the API validates it against the known catalogue. Historical pack versions must remain resolvable. The new columns/indexes are in migration `0003_catalogue_lesson_references`, reported applied by the user; catalogue-reference persistence has not been independently integration-tested. Catalogue coverage is a declared target and draft count, not reviewed/official coverage. Lesson completion remains separate from outcome assessment.
+Shared catalogue content is immutable, source-controlled and versioned; it remains explicitly separate from family lesson versions. Optional `catalogLessonRef` strings on activities and learner records point to a stable pack/version/lesson reference. Because pack content is not stored in PostgreSQL, the reference has no SQL foreign key; the API validates it against the known catalogue. Historical pack versions must remain resolvable. The new columns/indexes are in migration `0003_catalogue_lesson_references`; PostgreSQL persistence of catalogue references passed the opt-in integration test. Catalogue coverage is a declared target and draft count, not reviewed/official coverage. Lesson completion remains separate from outcome assessment.
 
 Use created_at, updated_at, created_by and appropriate revision counters. Store instants consistently and retain scheduling timezone/local-date semantics. Birth date is optional pending minimisation decision. Validate configuration JSON with versioned schemas; relational ownership and references stay outside opaque JSON.
 
