@@ -11,9 +11,34 @@ Use Node 22.13+ (validated with 26.1.0) and pnpm 11.25.0. Run `pnpm install --fr
 - `pnpm lint`, `pnpm typecheck`, `pnpm test`, `pnpm boundaries` — quality gates.
 - `pnpm build` — TypeScript compilation and local iOS JavaScript/Hermes export. This does not create a signed native application.
 
-For local PostgreSQL, set `HOMELEARN_DB_PASSWORD` and `DATABASE_URL` from `.env.sample` in your environment, then run `docker compose up -d postgres`. Port 5432 binds to loopback. The database volume persists; do not delete it as routine cleanup. The planning/learning schema migration is in `apps/api/prisma/migrations/0001_planning_learning` and can be applied with `pnpm --filter @homelearn/api db:migrate:deploy`. Run `pnpm --filter @homelearn/api test:postgres` for synthetic persistence coverage against the configured local database.
+For local PostgreSQL, copy `.env.sample` to `.env`, replace the local database password, then run `docker compose up -d postgres`. Port 5432 binds to loopback. The database volume persists; do not delete it as routine cleanup. Apply pending Prisma migrations with `pnpm --filter @homelearn/api db:migrate:deploy`. Run `pnpm --filter @homelearn/api test:postgres` for synthetic persistence coverage against the configured local database.
 
-The API defaults to loopback; physical-device access and authentication need explicit configuration in later milestones. No cloud build, analytics integration or app-store deployment is configured.
+## Using your laptop as the development server
+
+The laptop can run the local PostgreSQL database and HomeLearn API while you develop the iOS app. Start Postgres with the command above. In a terminal at the repository root, start the API:
+
+```sh
+pnpm dev
+```
+
+Dotenv loads `apps/api/.env` first and falls back to the repository-root `.env`; values already exported in the shell take precedence. In a second repository-root terminal, export the root `.env` values for Expo and start the iOS development server:
+
+```sh
+set -a
+source .env
+set +a
+pnpm dev:ios
+```
+
+The API listens on `127.0.0.1:3000`; PostgreSQL listens on `127.0.0.1:5432`. Both are currently restricted to the laptop. The default `EXPO_PUBLIC_API_URL` in `.env.sample` points the app to the laptop's loopback API. The API and Prisma CLI load dotenv automatically; Expo needs the root `.env` values exported in its shell. Docker Compose reads the root `.env` file itself.
+
+EAS Build creates the iOS app binary in Expo's build service; it does not host the API or database. A simulator running on the same laptop can be used for local development with `pnpm dev:ios`. A cloud-built or installed app using the default loopback address will only look for the API on the device or simulator itself, not automatically discover the laptop.
+
+**Physical iPhone/iPad access to the laptop API is not enabled yet.** The API validates that `HOST` is a loopback address, and intentionally rejects `0.0.0.0` or a LAN IP because the API has no authentication or family authorization. Do not bypass this check or expose the current API to your Wi-Fi network. Supporting a physical device requires implementing authentication and family isolation, then adding an explicitly configured LAN-access mode and setting `EXPO_PUBLIC_API_URL` to the laptop's reachable address before building the app. PostgreSQL should remain loopback-only.
+
+When LAN support is implemented, the phone/tablet and laptop will need to be on a trusted network, the laptop must stay awake and reachable, and the app build must use the laptop's current reachable IP or local DNS name. Do not use real family data with the current unauthenticated API. See [Expo iOS build profiles](docs/planning/EXPO_IOS_BUILDS.md) for the separate EAS setup and build commands.
+
+No cloud API, analytics integration or app-store submission is configured.
 
 ## Structure
 

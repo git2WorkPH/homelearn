@@ -1,0 +1,22 @@
+{
+  "cli": {
+    "appVersionSource": "remote"
+  },
+  "build": {
+    "preview-simulator": {
+      "distribution": "internal",
+      "environment": "preview",
+      "ios": {
+        "simulator": true
+      }
+    },
+    "preview-device": {
+      "distribution": "internal",
+      "environment": "preview"
+    },
+    "production": {
+      "autoIncrement": true,
+      "environment": "production"
+    }
+  }
+}

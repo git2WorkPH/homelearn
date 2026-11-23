@@ -1,1 +1,24 @@
-{"expo":{"name":"HomeLearn","slug":"homelearn","version":"0.0.1","platforms":["ios"],"orientation":"default","userInterfaceStyle":"automatic","ios":{"supportsTablet":true}}}
+{
+  "expo": {
+    "name": "HomeLearn",
+    "slug": "homelearn",
+    "version": "0.0.1",
+    "platforms": [
+      "ios"
+    ],
+    "orientation": "default",
+    "userInterfaceStyle": "automatic",
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.jaycac.homelearn",
+      "infoPlist": {
+        "ITSAppUsesNonExemptEncryption": false
+      }
+    },
+    "extra": {
+      "eas": {
+        "projectId": "b0bb3e97-1046-457a-8064-abfba8d109d7"
+      }
+    }
+  }
+}

@@ -1,3 +1,4 @@
+import "./lib/load-environment.js";
 import { z } from "zod";
 import { isIP } from "node:net";
 import { buildApp } from "./app.js";
