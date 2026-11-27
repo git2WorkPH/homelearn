@@ -1,6 +1,11 @@
 export const CATALOGUE_PACK_ID = "homelearn-k3-starter";
-export const CATALOGUE_PACK_VERSION = "2026.2";
-export const CATALOGUE_PACK_TITLE = "Kindergarten–Year 3 starter lessons";
+export const CATALOGUE_PACK_VERSION = "2026.3";
+export const CATALOGUE_ARCHIVE_VERSION = "2026.2";
+export type CataloguePackVersion =
+  | typeof CATALOGUE_PACK_VERSION
+  | typeof CATALOGUE_ARCHIVE_VERSION;
+export const CATALOGUE_PACK_TITLE =
+  "Kindergarten–Year 3 Bible-inspired starter lessons";
 
 export const LEARNING_LEVELS = [
   { key: "kindergarten", label: "Kindergarten" },
@@ -39,7 +44,7 @@ export interface CatalogueLesson {
   readonly id: string;
   readonly reference: string;
   readonly packId: typeof CATALOGUE_PACK_ID;
-  readonly packVersion: typeof CATALOGUE_PACK_VERSION;
+  readonly packVersion: CataloguePackVersion;
   readonly levelKey: LearningLevelKey;
   readonly levelLabel: string;
   readonly learningAreaKey: LearningAreaKey;

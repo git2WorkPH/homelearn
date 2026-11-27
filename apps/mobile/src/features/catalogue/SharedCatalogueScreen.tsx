@@ -15,6 +15,7 @@ import {
 export function SharedCatalogueScreen({ onClose }: { readonly onClose: () => void }) {
   const [lessons, setLessons] = useState<CatalogueLesson[]>([]);
   const [coverage, setCoverage] = useState<CatalogueCoverageCell[]>([]);
+  const [pack, setPack] = useState<CatalogueResponse['pack']>();
   const [level, setLevel] = useState('kindergarten');
   const [area, setArea] = useState('all');
   const [search, setSearch] = useState('');
@@ -33,6 +34,7 @@ export function SharedCatalogueScreen({ onClose }: { readonly onClose: () => voi
       ]);
       setLessons(catalogue.items);
       setCoverage(coverageResponse.cells);
+      setPack(catalogue.pack);
       setMessage('');
     } catch {
       setMessage('Start the local HomeLearn API to browse the shared lesson catalogue.');
@@ -92,7 +94,7 @@ export function SharedCatalogueScreen({ onClose }: { readonly onClose: () => voi
       <Text style={styles.intro}>Choose a level and learning area, explore an original starter lesson, and adapt it to your family.</Text>
     </View>
     <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
-      <Text style={styles.packLabel}>BIBLE-INSPIRED K–3 STARTER PACK · 56 LESSONS</Text>
+      <Text style={styles.packLabel}>BIBLE-INSPIRED K–3 STARTER PACK · {pack?.totalLessons ?? '…'} LESSONS</Text>
       <Text style={styles.body}>HomeLearn original lessons. Bible reflections accompany the subject learning; parent choices remain in control. NSW syllabus mapping is not included.</Text>
       {message ? <View accessibilityRole="alert" style={styles.notice}><Text style={styles.noticeText}>{message}</Text>{!loading ? <Button title="Try again" onPress={() => void loadCatalogue()} /> : null}</View> : null}
       <Text style={styles.filterLabel}>1 · CHOOSE A LEVEL</Text>

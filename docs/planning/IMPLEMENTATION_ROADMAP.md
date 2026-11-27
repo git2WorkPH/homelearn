@@ -17,7 +17,7 @@ Status: Roadmap baseline; milestone scope is updated as the user approves implem
 
 Each milestone includes traceability, change justification, tests and review. Dependencies follow the sequence; content design may proceed alongside core workflows when separately authorised. Calendar estimates await authentication, storage and hosting decisions.
 
-Current implementation: family lesson authoring and optional local AI drafting are available in the local API workflow. The shared catalogue slice adds 56 K–3 drafts, a K–12 coverage endpoint and mobile browse-to-plan linking. Migrations `0002_family_lessons` and `0003_catalogue_lesson_references` are applied; PostgreSQL persistence for catalogue references passed the opt-in integration test. No push or migration execution was performed by this catalogue implementation.
+Current implementation: family lesson authoring and optional local AI drafting are available in the local API workflow. The shared catalogue currently serves 68 original K–3 lessons in version `2026.3`, with 56 lessons from `2026.2` retained for historical reference lookup. The API provides K–12 coverage and the mobile app provides native browse-to-plan linking. Migrations `0002_family_lessons` and `0003_catalogue_lesson_references` are applied; PostgreSQL persistence for catalogue references passed the opt-in integration test. The 36 curated English, Mathematics and Science lessons were selected from broad public topic categories; they are original HomeLearn content and claim no official curriculum mapping.
 
 ## Approved sequence adjustment — 20 November 2026
 

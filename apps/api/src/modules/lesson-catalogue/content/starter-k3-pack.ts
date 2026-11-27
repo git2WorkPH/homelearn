@@ -1,5 +1,6 @@
 import {
   CATALOGUE_PACK_ID,
+  CATALOGUE_ARCHIVE_VERSION,
   CATALOGUE_PACK_VERSION,
   LEARNING_AREAS,
   LEARNING_LEVELS,
@@ -11,8 +12,9 @@ import type {
   LearningAreaKey,
   LearningLevelKey,
 } from "../domain/catalogue.js";
+import { REFINED_CORE_K3_SEEDS } from "./refined-core-k3.js";
 
-interface LessonSeed {
+export interface LessonSeed {
   readonly level: LearningLevelKey;
   readonly area: LearningAreaKey;
   readonly slug: string;
@@ -844,7 +846,10 @@ const SEEDS: readonly LessonSeed[] = [
   },
 ];
 
-function createLesson(seed: LessonSeed): CatalogueLesson {
+function createLesson(
+  seed: LessonSeed,
+  packVersion: CatalogueLesson["packVersion"] = CATALOGUE_PACK_VERSION,
+): CatalogueLesson {
   const levelLabel = levelLabels.get(seed.level);
   const learningArea = areaLabels.get(seed.area);
   if (levelLabel === undefined || learningArea === undefined)
@@ -853,7 +858,7 @@ function createLesson(seed: LessonSeed): CatalogueLesson {
   const lesson = {
     id,
     packId: CATALOGUE_PACK_ID,
-    packVersion: CATALOGUE_PACK_VERSION,
+    packVersion,
     levelKey: seed.level,
     levelLabel,
     learningAreaKey: seed.area,
@@ -890,8 +895,26 @@ function createLesson(seed: LessonSeed): CatalogueLesson {
   return Object.freeze({ ...lesson, reference: catalogueLessonRef(lesson) });
 }
 
+const CORE_LEARNING_AREAS = new Set<LearningAreaKey>([
+  "english",
+  "mathematics",
+  "science",
+]);
+
+const ARCHIVED_K3_LESSONS_2026_2: readonly CatalogueLesson[] = Object.freeze(
+  SEEDS.map((seed) => createLesson(seed, CATALOGUE_ARCHIVE_VERSION)),
+);
+
+export const ARCHIVED_K3_LESSONS: readonly CatalogueLesson[] =
+  ARCHIVED_K3_LESSONS_2026_2;
+
+const CURRENT_SEEDS: readonly LessonSeed[] = Object.freeze([
+  ...REFINED_CORE_K3_SEEDS,
+  ...SEEDS.filter((seed) => !CORE_LEARNING_AREAS.has(seed.area)),
+]);
+
 export const STARTER_K3_LESSONS: readonly CatalogueLesson[] = Object.freeze(
-  SEEDS.map(createLesson),
+  CURRENT_SEEDS.map((seed) => createLesson(seed)),
 );
 
 export const STARTER_K3_COVERAGE: readonly CatalogueCoverageCell[] =
@@ -910,7 +933,7 @@ export const STARTER_K3_COVERAGE: readonly CatalogueCoverageCell[] =
           levelLabel: level.label,
           learningAreaKey: area.key,
           learningArea: area.label,
-          targetLessonCount: inScope ? 2 : 0,
+          targetLessonCount: inScope ? matchingLessons.length : 0,
           draftLessonCount: matchingLessons.length,
           reviewedLessonCount: 0,
           status:

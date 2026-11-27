@@ -166,7 +166,7 @@ export function LessonsTab({ selectedLevel, onSelectLevel, view, onSelectView, s
     </Pressable>
     <Pressable accessibilityRole="button" onPress={onOpenCatalogue} style={styles.lessonCreateCard}>
       <Text style={styles.lessonCreateTitle}>Explore the K–3 lesson library</Text>
-      <Text style={styles.lessonCreateText}>Browse 56 original Bible-inspired HomeLearn lessons by level, learning area and topic. Open a parent guide and add a lesson to your plan.</Text>
+      <Text style={styles.lessonCreateText}>Browse original Bible-inspired HomeLearn lessons by level, learning area and topic. Open a parent guide and add a lesson to your plan.</Text>
       <Text style={styles.lessonCreateAction}>Browse lessons in HomeLearn ›</Text>
     </Pressable>
     <Text style={styles.formLabel}>LEARNING LEVEL</Text>

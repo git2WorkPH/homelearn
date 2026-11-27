@@ -1,13 +1,19 @@
 import type { CatalogueRepository } from "../application/catalogue-repository.js";
 import {
+  ARCHIVED_K3_LESSONS,
   STARTER_K3_COVERAGE,
   STARTER_K3_LESSONS,
 } from "../content/starter-k3-pack.js";
 import type { CatalogueFilters, CatalogueLesson } from "../domain/catalogue.js";
 
+const ALL_CATALOGUE_LESSONS = [
+  ...STARTER_K3_LESSONS,
+  ...ARCHIVED_K3_LESSONS,
+];
+
 export class InMemoryCatalogueRepository implements CatalogueRepository {
   async get(reference: string): Promise<CatalogueLesson | undefined> {
-    return STARTER_K3_LESSONS.find((lesson) => lesson.reference === reference);
+    return ALL_CATALOGUE_LESSONS.find((lesson) => lesson.reference === reference);
   }
 
   async list(

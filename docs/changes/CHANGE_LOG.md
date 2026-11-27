@@ -1,5 +1,13 @@
 # Change log and justification
 
+## 27 November 2026 — Curated K–3 core-subject topic lessons
+
+Authorization: user asked for original HomeLearn lessons guided by the K–3 SkillrHub catalogue and chose a curated set. See [change rationale](skillrhub-inspired-k3-topics.md).
+
+Changes: add 36 original Bible-inspired lessons (three per level in English, Mathematics and Science, Kindergarten–Year 3) selected from broad topic areas. The current catalogue becomes version `2026.3` with 68 lessons including the retained 32 non-core lessons. Keep all 56 lessons from `2026.2` available for historical reference lookup. Make catalogue pack totals dynamic in mobile views. SkillrHub topic guides are a selection reference only; no content, wording, examples, activities, branding or codes were copied, and no formal curriculum mapping is claimed.
+
+Validation: root Oxlint and typecheck, API build, iOS Expo export and `git diff --check` pass. Automated tests were not added or run. No database migration or dependency change. Runtime API behavior and simulator/device presentation remain unverified.
+
 ## 27 November 2026 — Native K–3 catalogue in Lessons
 
 Authorisation: user approved bringing a HomeLearn-native catalogue experience into the app, using SkillrHub's year/subject/topic navigation as a design reference only. See [change rationale](in-app-k3-catalogue.md).

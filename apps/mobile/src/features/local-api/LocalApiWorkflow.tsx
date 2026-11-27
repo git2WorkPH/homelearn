@@ -28,6 +28,7 @@ export function LocalApiWorkflow({ initialScreen, onBackToPrototype }: { readonl
   const [lessonVersions, setLessonVersions] = useState<LessonVersion[]>([]);
   const [catalogueLessons, setCatalogueLessons] = useState<CatalogueLesson[]>([]);
   const [catalogueCoverage, setCatalogueCoverage] = useState<CatalogueCoverageCell[]>([]);
+  const [cataloguePack, setCataloguePack] = useState<CatalogueResponse['pack']>();
   const [assessments, setAssessments] = useState<Assessment[]>([]);
   const [planTitle, setPlanTitle] = useState('Learning this week');
   const [selectedPlanId, setSelectedPlanId] = useState('');
@@ -93,6 +94,7 @@ export function LocalApiWorkflow({ initialScreen, onBackToPrototype }: { readonl
       setLessonVersions(nextLessons);
       setCatalogueLessons(nextCatalogue.items);
       setCatalogueCoverage(nextCoverage.cells);
+      setCataloguePack(nextCatalogue.pack);
       setAssessments(nextAssessments);
       setSelectedPlanId(current => current || nextPlans[0]?.id || '');
       setMessage('');
@@ -311,6 +313,7 @@ export function LocalApiWorkflow({ initialScreen, onBackToPrototype }: { readonl
     {screen === 'catalogue' ? <CatalogueBrowser
       lessons={filteredCatalogueLessons}
       coverage={catalogueCoverage}
+      pack={cataloguePack}
       level={catalogueLevel}
       learningArea={catalogueArea}
       search={catalogueSearch}
@@ -418,11 +421,12 @@ export function LocalApiWorkflow({ initialScreen, onBackToPrototype }: { readonl
 }
 
 function CatalogueBrowser({
-  lessons, coverage, level, learningArea, search, selectedLesson, activityTitle,
+  lessons, coverage, pack, level, learningArea, search, selectedLesson, activityTitle,
   onSelectLevel, onSelectArea, onSearch, onSelectLesson, onActivityTitleChange, onUseLesson, busy,
 }: {
   readonly lessons: readonly CatalogueLesson[];
   readonly coverage: readonly CatalogueCoverageCell[];
+  readonly pack: CatalogueResponse['pack'] | undefined;
   readonly level: string;
   readonly learningArea: string;
   readonly search: string;
@@ -441,7 +445,7 @@ function CatalogueBrowser({
   const selectedCell = coverage.find(cell => cell.levelKey === level && cell.learningAreaKey === learningArea);
   return <View style={styles.catalogue}>
     <Text accessibilityRole="header" style={styles.heading}>K–12 lesson catalogue</Text>
-    <Text style={styles.body}>Starter pack · Kindergarten–Year 3 · 56 original lesson drafts. The rest of K–12 is shown as a coverage gap.</Text>
+    <Text style={styles.body}>{pack?.title ?? 'Kindergarten–Year 3 starter lessons'} · {pack?.totalLessons ?? lessons.length} original HomeLearn lessons. Other K–12 levels are shown as coverage gaps.</Text>
     <View style={styles.notice}>
       <Text style={styles.noticeTitle}>For parent review</Text>
       <Text style={styles.body}>These original starter lessons are drafts for your review. Check and adapt each lesson before using it. No NSW syllabus mapping is included.</Text>
