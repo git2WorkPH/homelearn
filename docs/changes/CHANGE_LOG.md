@@ -1,5 +1,15 @@
 # Change log and justification
 
+## 27 November 2026 — Native K–3 catalogue in Lessons
+
+Authorisation: user approved bringing a HomeLearn-native catalogue experience into the app, using SkillrHub's year/subject/topic navigation as a design reference only. See [change rationale](in-app-k3-catalogue.md).
+
+Changes: connect the main Lessons tab to a native full-screen browser for the existing 56-lesson Bible-inspired K–3 pack. Parents can filter by level and learning area, search topics, open lesson guides and add the selected version to a weekly plan. Keep the existing local API catalogue/workspace route available. No SkillrHub content, branding, API or embed is used.
+
+Rationale: the main Lessons tab previously showed illustrative ideas and sent parents to a separate local API workflow to reach the shared starter lessons. The integrated catalogue makes HomeLearn's own pack discoverable in the primary app experience.
+
+Validation: mobile typecheck, targeted Oxlint, iOS Expo export and `git diff --check` pass. Automated tests were not added or run in this change. No packages, schema, migrations, catalogue data, credentials, branches or database records were changed. The export does not verify simulator/device presentation or API runtime connectivity.
+
 ## 23 November 2026 — K–3 starter lesson catalogue implementation
 
 Authorisation: user approved the first catalogue implementation slice and requested to review the implementation before deciding next steps. See [change justification](k-3-starter-lesson-catalogue.md).

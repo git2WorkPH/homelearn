@@ -165,9 +165,9 @@ export function LessonsTab({ selectedLevel, onSelectLevel, view, onSelectView, s
       <Text style={styles.lessonCreateAction}>Open lesson workshop ›</Text>
     </Pressable>
     <Pressable accessibilityRole="button" onPress={onOpenCatalogue} style={styles.lessonCreateCard}>
-      <Text style={styles.lessonCreateTitle}>Browse the starter catalogue</Text>
-      <Text style={styles.lessonCreateText}>Explore 56 original Kindergarten–Year 3 lesson drafts, see K–12 coverage gaps and use a selected lesson in your plan.</Text>
-      <Text style={styles.lessonCreateAction}>Open shared lesson library ›</Text>
+      <Text style={styles.lessonCreateTitle}>Explore the K–3 lesson library</Text>
+      <Text style={styles.lessonCreateText}>Browse 56 original Bible-inspired HomeLearn lessons by level, learning area and topic. Open a parent guide and add a lesson to your plan.</Text>
+      <Text style={styles.lessonCreateAction}>Browse lessons in HomeLearn ›</Text>
     </Pressable>
     <Text style={styles.formLabel}>LEARNING LEVEL</Text>
     <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.choiceRow}>

@@ -16,8 +16,9 @@ import {
 } from './features/prototype/data';
 import { Chip, HomeTab, JournalTab, LessonsTab, PlannerTab, ProgressTab, TabButton } from './features/prototype/components';
 import { styles } from './features/prototype/styles';
+import { SharedCatalogueScreen } from './features/catalogue/SharedCatalogueScreen';
 
-export function HomeLearnPrototype({ onOpenApi, onOpenCatalogue }: { readonly onOpenApi: () => void; readonly onOpenCatalogue: () => void }) {
+export function HomeLearnPrototype({ onOpenApi }: { readonly onOpenApi: () => void }) {
   const [activeTab, setActiveTab] = useState<Tab>('home');
   const [mode, setMode] = useState<Mode>('Guided');
   const [learnerFilter, setLearnerFilter] = useState<'All learners' | DemoLearner>('All learners');
@@ -37,6 +38,7 @@ export function HomeLearnPrototype({ onOpenApi, onOpenCatalogue }: { readonly on
   const [customSubjects, setCustomSubjects] = useState<readonly string[]>([]);
   const [activitySheetOpen, setActivitySheetOpen] = useState(false);
   const [recordSheetOpen, setRecordSheetOpen] = useState(false);
+  const [catalogueOpen, setCatalogueOpen] = useState(false);
   const [activityDraft, setActivityDraft] = useState('');
   const [activitySubject, setActivitySubject] = useState('Nature study');
   const [activityLearners, setActivityLearners] = useState<readonly DemoLearner[]>(['Eli', 'Khael']);
@@ -204,7 +206,7 @@ export function HomeLearnPrototype({ onOpenApi, onOpenCatalogue }: { readonly on
         onAddCustomSubject={addCustomSubject}
         onOpenLesson={setSelectedLesson}
         onOpenLessonWorkshop={onOpenApi}
-        onOpenCatalogue={onOpenCatalogue}
+        onOpenCatalogue={() => setCatalogueOpen(true)}
       /> : null}
       {activeTab === 'planner' ? <PlannerTab
         weekDays={weekDays}
@@ -310,6 +312,10 @@ export function HomeLearnPrototype({ onOpenApi, onOpenCatalogue }: { readonly on
           <Pressable accessibilityRole="button" onPress={saveRecord} style={[styles.primaryButton, recordDraft.trim() === '' && styles.primaryButtonDisabled]}><Text style={styles.primaryButtonText}>Save learning moment</Text></Pressable>
         </View>
       </View>
+    </Modal>
+
+    <Modal animationType="slide" presentationStyle="fullScreen" visible={catalogueOpen} onRequestClose={() => setCatalogueOpen(false)}>
+      <SharedCatalogueScreen onClose={() => setCatalogueOpen(false)} />
     </Modal>
   </View>;
 }

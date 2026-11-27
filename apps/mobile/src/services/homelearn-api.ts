@@ -9,6 +9,7 @@ export type Plan = {
   title: string;
   startsOn: string;
   endsOn: string;
+  status?: 'draft' | 'active' | 'archived';
 };
 
 export type Schedule = {
