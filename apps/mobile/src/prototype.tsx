@@ -17,6 +17,7 @@ import {
 import { Chip, HomeTab, JournalTab, LessonsTab, PlannerTab, ProgressTab, TabButton } from './features/prototype/components';
 import { styles } from './features/prototype/styles';
 import { SharedCatalogueScreen } from './features/catalogue/SharedCatalogueScreen';
+import { HeaResourceScreen } from './features/resources/HeaResourceScreen';
 
 export function HomeLearnPrototype({ onOpenApi }: { readonly onOpenApi: () => void }) {
   const [activeTab, setActiveTab] = useState<Tab>('home');
@@ -39,6 +40,7 @@ export function HomeLearnPrototype({ onOpenApi }: { readonly onOpenApi: () => vo
   const [activitySheetOpen, setActivitySheetOpen] = useState(false);
   const [recordSheetOpen, setRecordSheetOpen] = useState(false);
   const [catalogueOpen, setCatalogueOpen] = useState(false);
+  const [heaResourcesOpen, setHeaResourcesOpen] = useState(false);
   const [activityDraft, setActivityDraft] = useState('');
   const [activitySubject, setActivitySubject] = useState('Nature study');
   const [activityLearners, setActivityLearners] = useState<readonly DemoLearner[]>(['Eli', 'Khael']);
@@ -144,6 +146,8 @@ export function HomeLearnPrototype({ onOpenApi }: { readonly onOpenApi: () => vo
   const greeting = date.getHours() < 12 ? 'Good morning' : date.getHours() < 17 ? 'Good afternoon' : 'Good evening';
   const todayLabel = date.toLocaleDateString('en-AU', { weekday: 'long', day: 'numeric', month: 'long' });
 
+  if (heaResourcesOpen) return <HeaResourceScreen onClose={() => setHeaResourcesOpen(false)} />;
+
   return <View style={styles.app}>
     <ScrollView contentContainerStyle={styles.scrollContent} contentInsetAdjustmentBehavior="automatic" showsVerticalScrollIndicator={false}>
       <View style={styles.pageHeader}>
@@ -207,6 +211,7 @@ export function HomeLearnPrototype({ onOpenApi }: { readonly onOpenApi: () => vo
         onOpenLesson={setSelectedLesson}
         onOpenLessonWorkshop={onOpenApi}
         onOpenCatalogue={() => setCatalogueOpen(true)}
+        onOpenHeaResources={() => setHeaResourcesOpen(true)}
       /> : null}
       {activeTab === 'planner' ? <PlannerTab
         weekDays={weekDays}

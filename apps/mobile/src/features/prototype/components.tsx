@@ -136,7 +136,7 @@ export function PlannerTab({ weekDays, selectedDay, selectedDate, onChooseDay, l
   </View>;
 }
 
-export function LessonsTab({ selectedLevel, onSelectLevel, view, onSelectView, selectedSubject, onSelectSubject, search, onSearch, lessons, customSubjects, customSubject, onCustomSubjectChange, onAddCustomSubject, onOpenLesson, onOpenLessonWorkshop, onOpenCatalogue }: {
+export function LessonsTab({ selectedLevel, onSelectLevel, view, onSelectView, selectedSubject, onSelectSubject, search, onSearch, lessons, customSubjects, customSubject, onCustomSubjectChange, onAddCustomSubject, onOpenLesson, onOpenLessonWorkshop, onOpenCatalogue, onOpenHeaResources }: {
   readonly selectedLevel: string;
   readonly onSelectLevel: (value: string) => void;
   readonly view: 'Browse' | 'Coverage';
@@ -153,6 +153,7 @@ export function LessonsTab({ selectedLevel, onSelectLevel, view, onSelectView, s
   readonly onOpenLesson: (lesson: DemoLesson) => void;
   readonly onOpenLessonWorkshop: () => void;
   readonly onOpenCatalogue: () => void;
+  readonly onOpenHeaResources: () => void;
 }) {
   const subjectOptions = ['All subjects', ...lessonSubjects, ...customSubjects];
   return <View>
@@ -168,6 +169,11 @@ export function LessonsTab({ selectedLevel, onSelectLevel, view, onSelectView, s
       <Text style={styles.lessonCreateTitle}>Explore the K–3 lesson library</Text>
       <Text style={styles.lessonCreateText}>Browse original Bible-inspired HomeLearn lessons by level, learning area and topic. Open a parent guide and add a lesson to your plan.</Text>
       <Text style={styles.lessonCreateAction}>Browse lessons in HomeLearn ›</Text>
+    </Pressable>
+    <Pressable accessibilityRole="button" onPress={onOpenHeaResources} style={styles.lessonCreateCard}>
+      <Text style={styles.lessonCreateTitle}>Free resources from HEA</Text>
+      <Text style={styles.lessonCreateText}>Explore the Home Education Association’s directory of free learning resources. Opens inside HomeLearn.</Text>
+      <Text style={styles.lessonCreateAction}>Browse HEA resources ›</Text>
     </Pressable>
     <Text style={styles.formLabel}>LEARNING LEVEL</Text>
     <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.choiceRow}>

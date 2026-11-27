@@ -1,5 +1,13 @@
 # Change log and justification
 
+## 27 November 2026 — HEA free-resource browser
+
+Authorisation: the user chose an in-app browser for the HEA free-resources directory. Scope includes the Lessons entry point, full-screen WebView, history-aware back navigation, HTTPS-only links, Safari fallback and required dependency.
+
+Changes: add `react-native-webview@14.0.1`, add a full-screen HEA resource screen, connect it from Lessons, and add FR-010 / AC-019 traceability. No resource content is copied or stored; no learner data is sent by HomeLearn.
+
+Verification: mobile typecheck, targeted Oxlint, iOS Expo export, CocoaPods installation/autolinking and `git diff --check` pass. CocoaPods reports a non-blocking internal Expo module visibility warning. Tests were not added or run; iPhone/iPad runtime presentation remains unverified. See [HEA free-resource browser](hea-free-resource-browser.md).
+
 ## 27 November 2026 — Curated K–3 core-subject topic lessons
 
 Authorization: user asked for original HomeLearn lessons guided by the K–3 SkillrHub catalogue and chose a curated set. See [change rationale](skillrhub-inspired-k3-topics.md).

@@ -13,6 +13,7 @@ Status: Draft specification; every requirement is currently NOT_STARTED.
 | FR-007 | Progress and portfolio summaries, PDF export, optional assessment methods and identification of outcomes with limited evidence | P0 |
 | FR-008 | Level-aware shared lesson catalogue spanning Kindergarten and Years 1–12 across extensible learning areas/strands; browse, search and filter versioned packs, expose coverage gaps, and link a selected lesson version to planned activities and learning records. Keep shared catalogue lessons distinct from immutable family-authored lesson versions | P0 |
 | FR-009 | Optional local AI lesson drafting; labelled, schema-validated drafts remain unsaved until parent review and approval; generation cannot alter records or claim official curriculum alignment | P1 |
+| FR-010 | Provide curated external educational resource directories in a full-screen in-app browser with page-history navigation, HTTPS-only navigation and an external-browser fallback | P1 |
 
 Configuration applies family → learner → learner-subject → activity precedence independently to curriculum, pedagogy, scheduling and assessment. Missing fields inherit; explicit empty values clear only where supported. Collections replace rather than implicitly merge. Invalid combinations require parent resolution. These detailed semantics are proposed for approval.
 

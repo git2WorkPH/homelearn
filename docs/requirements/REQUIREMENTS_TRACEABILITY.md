@@ -13,6 +13,7 @@ Status: Updated 23 November 2026. Current verified and partial outcomes are reco
 | FR-007 | AC-011, AC-013 | Reporting | Authorisation, PDF content/layout checks |
 | FR-008 | AC-012 | Shared lesson catalogue, family lesson authoring, planning/learning links | Coverage, stable reference preservation, parent-selected associations and editorial status |
 | FR-009 | AC-016 | Optional local lesson drafting | Ollama adapter validation, prompt minimisation and parent approval |
+| FR-010 | AC-019 | Mobile resource browser | Native UI, HTTPS navigation policy, link handling and iOS device review |
 | NFR-001–002 | AC-013–014 | All | Isolation and log inspection |
 | NFR-003 | Quality gates | All | Oxlint, typecheck, boundary checker, build |
 | NFR-004 | AC-017 | Mobile | Automated and manual accessibility |
@@ -48,3 +49,5 @@ Historical 22 November note: migration `0002_family_lessons` was reported unappl
 FR-008 native discovery update — 27 November 2026: implemented an in-app native full-screen browser for the existing shared K–3 pack, linked from the main Lessons tab. It provides level/learning-area filters, topic search, lesson guides and a plan action using the existing catalogue and planning API. Mobile typecheck, targeted Oxlint, iOS Expo export and whitespace validation pass. No new test was added or run, and runtime API/device behavior is not verified. Authentication and family isolation remain deferred.
 
 FR-008 curated-topic update — 27 November 2026: added 36 original lessons for English, Mathematics and Science (three per Kindergarten–Year 3 level), selected using broad K–3 SkillrHub topic categories as reference only. Current version `2026.3` has 68 lessons; `2026.2` remains available through reference lookup. No official curriculum mapping is claimed. Root lint/typecheck, API build, iOS Expo export and whitespace validation pass. Tests not added or run; runtime old-reference lookup and device presentation remain unverified.
+
+FR-010 implementation update — 27 November 2026: added an HEA free-resources entry to Lessons and a full-screen Expo WebView for the directory and linked HTTPS pages. Back follows WebView history and returns to Lessons at the root. HTTPS-only navigation and mixed-content blocking are configured; load errors offer retry and Safari. The Expo-compatible WebView dependency is installed and local CocoaPods autolinking completed. Mobile typecheck, targeted Oxlint, iOS Expo export, CocoaPods installation and whitespace validation pass; no tests were added or run. Embedded rendering and navigation on physical iOS devices remain unverified.

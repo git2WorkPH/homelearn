@@ -24,5 +24,6 @@ Status: Draft; all execution evidence NOT RUN. Synthetic fixtures only.
 | AC-016 | With P1 enabled, local Ollama output is schema-validated, labelled as AI-generated and remains an unsaved draft until parent approval; invalid output is rejected and generation cannot autonomously alter records |
 | AC-017 | Complete primary workflows by keyboard and assess proposed accessibility target manually and automatically |
 | AC-018 | Migration/restore exercises preserve authorised records and object references under the approved recovery policy |
+| AC-019 | From Lessons, open the HEA free-resources directory in HomeLearn; open linked HTTPS resources in the same view; Back follows browser history and returns to Lessons at the root; failed pages offer retry and Safari fallback; non-HTTPS navigation is blocked |
 
 Future evidence must record command/scenario, revision, environment, result and limitations. Test existence is not proof of acceptance.
