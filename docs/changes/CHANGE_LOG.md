@@ -1,5 +1,17 @@
 # Change log and justification
 
+## 27 November 2026 — Lesson catalogue safe-area header
+
+Authorization: user reported that the back button overlapped the device time when opening the lesson catalogue. Update the screen root to respect the iOS safe area; no feature or navigation behavior changed.
+
+Verification: mobile typecheck, targeted Oxlint, iOS Expo export and `git diff --check` pass. Tests were not run; device confirmation remains pending. See [in-app K–3 catalogue](in-app-k3-catalogue.md).
+
+## 27 November 2026 — Local API safe-area wrapper
+
+Authorization: user reported that “Back to product prototype” overlapped the iPhone safe area. Wrap the Local API workflow in a safe-area view without changing its content or navigation.
+
+Verification: mobile typecheck, targeted Oxlint, iOS Expo export and `git diff --check` pass. Tests were not run; device confirmation remains pending. See [mobile component refactor](mobile-component-service-refactor.md).
+
 ## 27 November 2026 — HEA free-resource browser
 
 Authorisation: the user chose an in-app browser for the HEA free-resources directory. Scope includes the Lessons entry point, full-screen WebView, history-aware back navigation, HTTPS-only links, Safari fallback and required dependency.

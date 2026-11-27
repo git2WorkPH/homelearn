@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useState, type ReactNode } from 'react';
-import { ActivityIndicator, Button, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
+import { ActivityIndicator, Button, Pressable, SafeAreaView, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 import {
   familyId,
   id,
@@ -87,7 +87,7 @@ export function SharedCatalogueScreen({ onClose }: { readonly onClose: () => voi
     }
   };
 
-  return <View style={styles.screen}>
+  return <SafeAreaView style={styles.screen}>
     <View style={styles.header}>
       <Pressable accessibilityRole="button" onPress={onClose} style={styles.backButton}><Text style={styles.backText}>‹  Lessons</Text></Pressable>
       <Text accessibilityRole="header" style={styles.title}>HomeLearn lessons</Text>
@@ -141,7 +141,7 @@ export function SharedCatalogueScreen({ onClose }: { readonly onClose: () => voi
         <Text style={styles.caption}>Adding a lesson creates a planned activity. Completion does not mark a learning goal as mastered.</Text>
       </View> : null}
     </ScrollView>
-  </View>;
+  </SafeAreaView>;
 }
 
 function FilterChip({ label, selected, onPress }: { readonly label: string; readonly selected: boolean; readonly onPress: () => void }) {

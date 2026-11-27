@@ -38,3 +38,5 @@ No user-facing behavior or API was removed. Code moved out of `app.tsx` to the f
 - Mobile tests and build — not run; tests were not requested and no app binary was requested.
 
 Recovery is a follow-up move of the feature/service code back into `app.tsx`; no data or schema changes are involved.
+
+Follow-up, 27 November 2026: the user reported that “Back to product prototype” overlapped the iPhone safe area. Wrap the Local API workflow in React Native `SafeAreaView`, keeping the scrollable content below the status bar and above the device home indicator. No content or navigation behavior changed. Mobile typecheck, targeted Oxlint, iOS Expo export and whitespace checks pass; tests were not run. Physical-device confirmation remains pending.

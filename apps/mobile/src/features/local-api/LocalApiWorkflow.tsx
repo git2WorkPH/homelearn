@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from 'react';
-import { Button, Pressable, ScrollView, StyleSheet, Switch, Text, TextInput, View } from 'react-native';
+import { Button, Pressable, SafeAreaView, ScrollView, StyleSheet, Switch, Text, TextInput, View } from 'react-native';
 import {
   assessmentJudgements,
   familyId,
@@ -298,7 +298,7 @@ export function LocalApiWorkflow({ initialScreen, onBackToPrototype }: { readonl
     setMessage(`Added “${title}” to the weekly plan. The starter lesson is still marked for your review.`);
   }, 'Could not add this starter lesson to the weekly plan. Check the local API.');
 
-  return <ScrollView contentContainerStyle={styles.page}><View style={styles.content}>
+  return <SafeAreaView style={styles.safeArea}><ScrollView contentContainerStyle={styles.page}><View style={styles.content}>
     <Button
      title="← Back to product prototype" onPress={onBackToPrototype} />
     <Text accessibilityRole="header" style={styles.title}>HomeLearn</Text>
@@ -417,7 +417,7 @@ export function LocalApiWorkflow({ initialScreen, onBackToPrototype }: { readonl
     </View>)}
     <Button title="Refresh" disabled={busy} onPress={() => void refresh()} />
     </>}
-  </View></ScrollView>;
+  </View></ScrollView></SafeAreaView>;
 }
 
 function CatalogueBrowser({
@@ -538,6 +538,7 @@ function CatalogueCoverageView({ cells }: { readonly cells: readonly CatalogueCo
 }
 
 const styles = StyleSheet.create({
+  safeArea: { flex: 1, backgroundColor: '#f7f5ef' },
   page: { flexGrow: 1, padding: 24, backgroundColor: '#f7f5ef' },
   content: { width: '100%', maxWidth: 720, alignSelf: 'center', gap: 14 },
   navigation: { flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'space-between', gap: 4 },
