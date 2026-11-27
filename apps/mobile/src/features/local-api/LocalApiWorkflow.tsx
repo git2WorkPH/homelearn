@@ -300,7 +300,7 @@ export function LocalApiWorkflow({ initialScreen, onBackToPrototype }: { readonl
 
   return <SafeAreaView style={styles.safeArea}><ScrollView contentContainerStyle={styles.page}><View style={styles.content}>
     <Button
-     title="← Back to product prototype" onPress={onBackToPrototype} />
+     title="← Back to HomeLearn" onPress={onBackToPrototype} />
     <Text accessibilityRole="header" style={styles.title}>HomeLearn</Text>
     <Text style={styles.body}>Plan learning and record what happens. Local demo uses synthetic family and learner IDs only.</Text>
     <View style={styles.navigation}>

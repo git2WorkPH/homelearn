@@ -233,7 +233,7 @@ export function JournalTab({ records, learnerFilter, setLearnerFilter, onAdd }: 
         {record.lessonId ? <View style={styles.journalLessonLink}><Text style={styles.journalLessonLinkText}>K–12 lesson · {demoLessons.find(lesson => lesson.id === record.lessonId)?.title}</Text></View> : null}
       </View>
     </View>)}
-    <View style={styles.privacyCard}><Text style={styles.privacyIcon}>⌑</Text><Text style={styles.privacyText}>Your journal belongs to your family. These prototype notes are only held on this screen.</Text></View>
+    <View style={styles.privacyCard}><Text style={styles.privacyIcon}>⌑</Text><Text style={styles.privacyText}>Your journal belongs to your family. These sample notes are only held on this screen.</Text></View>
   </View>;
 }
 

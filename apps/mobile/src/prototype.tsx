@@ -154,7 +154,7 @@ export function HomeLearnPrototype({ onOpenApi }: { readonly onOpenApi: () => vo
         <View style={styles.brandRow}>
           <View style={styles.brandMark}><Text style={styles.brandMarkText}>h</Text></View>
           <Text style={styles.brandName}>homelearn</Text>
-          <View style={styles.prototypePill}><Text style={styles.prototypePillText}>PROTOTYPE</Text></View>
+          <View style={styles.prototypePill}><Text style={styles.prototypePillText}>LEARNING</Text></View>
         </View>
         <Pressable accessibilityRole="button" accessibilityLabel="Open local API workflows" onPress={onOpenApi} style={styles.apiButton}>
           <Text style={styles.apiButtonText}>Local API ↗</Text>
@@ -228,7 +228,7 @@ export function HomeLearnPrototype({ onOpenApi }: { readonly onOpenApi: () => vo
       {activeTab === 'journal' ? <JournalTab records={filteredRecords} learnerFilter={learnerFilter} setLearnerFilter={setLearnerFilter} onAdd={() => openRecordSheet()} /> : null}
       {activeTab === 'progress' ? <ProgressTab learnerFilter={learnerFilter} setLearnerFilter={setLearnerFilter} recordCount={filteredRecords.length} /> : null}
 
-      <View style={styles.sampleNote}><Text style={styles.sampleNoteText}>Sample family · Fictional names and learning records for this prototype</Text></View>
+      <View style={styles.sampleNote}><Text style={styles.sampleNoteText}>Sample family · Fictional names and learning records shown here</Text></View>
     </ScrollView>
 
     <View style={styles.tabBar}>
@@ -260,7 +260,7 @@ export function HomeLearnPrototype({ onOpenApi }: { readonly onOpenApi: () => vo
               <Text style={styles.familyExperienceHint}>Use the lesson in an everyday activity or experience you choose.</Text>
               <TextInput accessibilityLabel="Family experience example" placeholder="e.g. bake together and scale the recipe" value={lessonExperienceDraft} onChangeText={setLessonExperienceDraft} style={styles.formInput} />
             </View>
-            <View style={styles.separationNote}><Text style={styles.separationIcon}>✳</Text><Text style={styles.separationText}>Prototype idea only. Jurisdiction-specific syllabus references are deferred; this content has not been reviewed for K–12 coverage.</Text></View>
+            <View style={styles.separationNote}><Text style={styles.separationIcon}>✳</Text><Text style={styles.separationText}>Sample idea only. Jurisdiction-specific syllabus references are deferred; this content has not been reviewed for K–12 coverage.</Text></View>
           </ScrollView>
           <Pressable accessibilityRole="button" onPress={() => addLessonToPlan(selectedLesson)} style={styles.primaryButton}><Text style={styles.primaryButtonText}>Add lesson to this week</Text></Pressable>
           <Pressable accessibilityRole="button" accessibilityState={{ disabled: lessonExperienceDraft.trim() === '' }} disabled={lessonExperienceDraft.trim() === ''} onPress={() => addLessonToPlan(selectedLesson, lessonExperienceDraft.trim())} style={[styles.familyExperienceButton, lessonExperienceDraft.trim() === '' && styles.familyExperienceButtonDisabled]}><Text style={styles.familyExperienceButtonText}>Plan with family experience</Text></Pressable>

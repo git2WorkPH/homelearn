@@ -1,5 +1,11 @@
 # Change log and justification
 
+## 27 November 2026 — Replace prototype labels in the app
+
+Authorization: user asked to stop calling the main HomeLearn experience a prototype. Replace visible labels with HomeLearn/learning/sample wording; keep the existing screens, sample data and internal component names. Update existing interaction-test expectations to match the product language.
+
+Verification: mobile typecheck, targeted Oxlint, iOS Expo export and `git diff --check` pass. Existing UI test expectations were updated but tests were not run.
+
 ## 27 November 2026 — Lesson catalogue safe-area header
 
 Authorization: user reported that the back button overlapped the device time when opening the lesson catalogue. Update the screen root to respect the iOS safe area; no feature or navigation behavior changed.

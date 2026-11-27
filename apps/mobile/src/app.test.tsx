@@ -1,10 +1,10 @@
 import { fireEvent, render, waitFor } from '@testing-library/react-native';
 import App from './app';
 
-test('shows an interactive product prototype with lessons, planning, journal, and progress views', async () => {
+test('shows the HomeLearn experience with lessons, planning, journal, and progress views', async () => {
   const result = await render(<App />);
   expect(result.getByText('homelearn')).toBeTruthy();
-  expect(result.getByText('PROTOTYPE')).toBeTruthy();
+  expect(result.getByText('LEARNING')).toBeTruthy();
   expect(result.getByText('Learning, your way.')).toBeTruthy();
   await fireEvent.press(result.getByText('Lessons'));
   expect(result.getByText('Create a family lesson')).toBeTruthy();
@@ -25,8 +25,8 @@ test('shows an interactive product prototype with lessons, planning, journal, an
   await fireEvent.press(result.getByText('Pattern detectives'));
   expect(result.getByText('LEARNING GOAL')).toBeTruthy();
   expect(result.getByText('Household objects, sounds, or movement')).toBeTruthy();
-  expect(result.getByText('Original HomeLearn prototype idea · Demo 0.2 · Illustrative · not reviewed')).toBeTruthy();
-  expect(result.getByText('Prototype idea only. Jurisdiction-specific syllabus references are deferred; this content has not been reviewed for K–12 coverage.')).toBeTruthy();
+  expect(result.getByText('Original HomeLearn sample idea · Demo 0.2 · Illustrative · not reviewed')).toBeTruthy();
+  expect(result.getByText('Sample idea only. Jurisdiction-specific syllabus references are deferred; this content has not been reviewed for K–12 coverage.')).toBeTruthy();
   await fireEvent.press(result.getByText('Add lesson to this week'));
   expect(result.getByText('Weekly plan')).toBeTruthy();
   expect(result.getByText('Pattern detectives')).toBeTruthy();
@@ -108,7 +108,7 @@ test('edits an activity and observation, and records an independent outcome asse
     return { ok: true, json: async () => response } as Response;
   });
   const result = await render(<App />);
-  expect(result.getByText('PROTOTYPE')).toBeTruthy();
+  expect(result.getByText('LEARNING')).toBeTruthy();
   await fireEvent.press(result.getByText('Lessons'));
   await fireEvent.press(result.getByText('Create a family lesson'));
   expect(result.getByText('HomeLearn')).toBeTruthy();

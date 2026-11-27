@@ -1,6 +1,6 @@
 # HomeLearn
 
-Parent-led learning for iPhone and iPad. The current local prototype supports planning, activities, learning records, observations and explicit assessments with synthetic IDs. Authentication, family/learner setup, evidence and portfolios remain deferred.
+Parent-led learning for iPhone and iPad. The current local sample experience supports planning, activities, learning records, observations and explicit assessments with synthetic IDs. Authentication, family/learner setup, evidence and portfolios remain deferred.
 
 ## Local development
 
@@ -54,7 +54,7 @@ pnpm dev:ios:device
 
 The first run generates the native iOS project if needed, builds it locally and installs it on the selected device. Once installed, start the device-targeted Metro server with `pnpm dev:ios:device:server`, then open HomeLearn on the device. The phone and laptop must share a reachable local network. Xcode and its iOS platform support are required. Free Personal Team provisioning expires after seven days, so Xcode will need to re-provision the app periodically. This is a personal development install; EAS device distribution and App Store release still require a paid Apple Developer team.
 
-The current local API remains loopback-only and cannot be reached from the physical device. Use the prototype's synthetic sample experience on-device; do not expose the unauthenticated API to Wi-Fi or use real family data.
+The current local API remains loopback-only and cannot be reached from the physical device. Use the synthetic sample experience on-device; do not expose the unauthenticated API to Wi-Fi or use real family data.
 
 ## Structure
 
