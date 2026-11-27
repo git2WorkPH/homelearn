@@ -1,6 +1,6 @@
 export type Tab = 'home' | 'lessons' | 'planner' | 'journal' | 'progress';
 export type Mode = 'Guided' | 'Independent';
-export type DemoLearner = 'Ava' | 'Leo';
+export type DemoLearner = 'Eli' | 'Khael';
 export type DemoActivity = {
   readonly id: string;
   readonly title: string;
@@ -25,20 +25,20 @@ export type DemoRecord = {
 };
 export type DemoLesson = { readonly id: string; readonly title: string; readonly subject: string; readonly strand: string; readonly focus: string; readonly learningGoal: string; readonly materials: readonly string[]; readonly adaptation: string; readonly duration: string; readonly description: string; readonly steps: readonly string[]; readonly provenance: string; readonly version: string; readonly reviewStatus: string };
 
-export const learners: readonly DemoLearner[] = ['Ava', 'Leo'];
+export const learners: readonly DemoLearner[] = ['Eli', 'Khael'];
 export const subjects = ['Literacy', 'Mathematics', 'Nature study', 'Creative arts', 'Movement'];
 const todayOffset = (new Date().getDay() + 6) % 7;
 export const initialActivities: readonly DemoActivity[] = [
-  { id: 'read-aloud', title: 'Morning read-aloud', subject: 'Literacy', learnerIds: ['Ava', 'Leo'], startTime: '9:00', duration: '20 min', dayOffset: todayOffset, isComplete: true },
-  { id: 'seed-detectives', title: 'Seed detectives', subject: 'Nature study', learnerIds: ['Ava', 'Leo'], startTime: '10:30', duration: '35 min', dayOffset: todayOffset, isComplete: false },
-  { id: 'cardboard-city', title: 'Build a cardboard city', subject: 'Creative arts', learnerIds: ['Ava'], duration: 'Flexible', dayOffset: todayOffset, isComplete: false },
-  { id: 'number-garden', title: 'Number garden', subject: 'Mathematics', learnerIds: ['Leo'], startTime: '13:30', duration: '25 min', dayOffset: Math.min(todayOffset + 1, 6), isComplete: false },
-  { id: 'story-walk', title: 'Story walk', subject: 'Movement', learnerIds: ['Ava', 'Leo'], startTime: '10:00', duration: '30 min', dayOffset: Math.min(todayOffset + 2, 6), isComplete: false },
+  { id: 'read-aloud', title: 'Morning read-aloud', subject: 'Literacy', learnerIds: ['Eli', 'Khael'], startTime: '9:00', duration: '20 min', dayOffset: todayOffset, isComplete: true },
+  { id: 'seed-detectives', title: 'Seed detectives', subject: 'Nature study', learnerIds: ['Eli', 'Khael'], startTime: '10:30', duration: '35 min', dayOffset: todayOffset, isComplete: false },
+  { id: 'cardboard-city', title: 'Build a cardboard city', subject: 'Creative arts', learnerIds: ['Eli'], duration: 'Flexible', dayOffset: todayOffset, isComplete: false },
+  { id: 'number-garden', title: 'Number garden', subject: 'Mathematics', learnerIds: ['Khael'], startTime: '13:30', duration: '25 min', dayOffset: Math.min(todayOffset + 1, 6), isComplete: false },
+  { id: 'story-walk', title: 'Story walk', subject: 'Movement', learnerIds: ['Eli', 'Khael'], startTime: '10:00', duration: '30 min', dayOffset: Math.min(todayOffset + 2, 6), isComplete: false },
 ];
 export const initialRecords: readonly DemoRecord[] = [
-  { id: 'note-1', learner: 'Ava', activityTitle: 'Morning read-aloud', subject: 'Literacy', note: 'Paused to predict what the character might do next.', happenedAt: 'Today · 9:24 am' },
-  { id: 'note-2', learner: 'Leo', activityTitle: 'Seed detectives', subject: 'Nature study', note: 'Sorted the seeds by shape, then noticed two had the same colour.', happenedAt: 'Yesterday · 11:10 am' },
-  { id: 'note-3', learner: 'Ava', activityTitle: 'Cardboard city', subject: 'Creative arts', note: 'Changed the design after testing how the bridge held weight.', happenedAt: 'Yesterday · 2:05 pm' },
+  { id: 'note-1', learner: 'Eli', activityTitle: 'Morning read-aloud', subject: 'Literacy', note: 'Paused to predict what the character might do next.', happenedAt: 'Today · 9:24 am' },
+  { id: 'note-2', learner: 'Khael', activityTitle: 'Seed detectives', subject: 'Nature study', note: 'Sorted the seeds by shape, then noticed two had the same colour.', happenedAt: 'Yesterday · 11:10 am' },
+  { id: 'note-3', learner: 'Eli', activityTitle: 'Cardboard city', subject: 'Creative arts', note: 'Changed the design after testing how the bridge held weight.', happenedAt: 'Yesterday · 2:05 pm' },
 ];
 export const subjectColors: Record<string, string> = {
   Literacy: '#d7825d',

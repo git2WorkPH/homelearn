@@ -1,4 +1,7 @@
-import type { LessonDraft, LessonDraftRequest } from '../domain/lesson-version.js';
+import type {
+  LessonDraft,
+  LessonDraftRequest,
+} from "../domain/lesson-version.js";
 
 /** Optional adapter. A draft provider must not receive child profiles or learning records. */
 export interface LessonDraftProvider {

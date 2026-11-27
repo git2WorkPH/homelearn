@@ -10,30 +10,41 @@ HomeLearn's Expo app lives in `apps/mobile`. EAS Build configuration is kept in 
 | `preview-device` | Internally distributed iPhone/iPad build | Expo account, Apple Developer signing, and registered devices for ad hoc installation |
 | `production` | App Store Connect-ready iOS build | Expo account and Apple Developer Program signing; building does not submit the app |
 
-The repository includes scripts for each profile. For example:
+The EAS project is already linked in `apps/mobile/app.json`, which also contains the iOS bundle identifier. Sign in to the Expo account that owns this project and run the selected build script from `apps/mobile`:
 
 ```sh
 cd apps/mobile
 npx eas-cli@latest login
-npx eas-cli@latest build:configure --platform ios
 pnpm build:eas:simulator
 ```
 
-During EAS project configuration, sign in to the Expo account that should own HomeLearn. EAS will prompt for a unique iOS bundle identifier because `app.json` does not yet contain one, and it will link the app to an Expo project by adding its project ID. Review those generated changes before committing them. Do not provide Apple credentials to Codex; enter them only in the EAS CLI prompts if you choose to build a signed device or store artifact.
+Do not provide Apple credentials to Codex; enter them only in the EAS CLI prompts if you choose to build a signed device or store artifact.
 
 For a signed device preview, use `pnpm build:eas:device`. For a store-ready artifact, use `pnpm build:eas:production`. Neither command submits the build to Apple; store submission is a separate step and is not configured here.
+
+## Local physical-device development
+
+For personal iPhone/iPad testing without paid Apple Developer membership, use Xcode's local development signing instead of the EAS device profile. The repository includes `expo-dev-client` and these commands:
+
+```sh
+# From the repository root; connect and unlock the device first.
+pnpm dev:ios:device
+
+# After the app is installed, start the LAN development server when needed.
+pnpm dev:ios:device:server
+```
+
+Sign in to Xcode with an Apple ID and choose its **Personal Team** for automatic signing. Enable Developer Mode on iOS 16 and later. Xcode, iOS platform support, a trusted USB connection for initial setup and a network connection between device and laptop are required. Personal Team provisioning expires after seven days, so Xcode must re-provision periodically. Local personal signing is for development on your own device; EAS device distribution and App Store builds still require paid Apple Developer membership. Expo documents local Xcode builds as the iPhone development-build option that does not require paid membership: [local development builds](https://docs.expo.dev/develop/development-builds/introduction/). Apple confirms that Personal Team device profiles expire after seven days: [Apple Developer account overview](https://developer.apple.com/help/account/basics/about-your-developer-account).
 
 ## Backend and environment limitations
 
 EAS Build creates an iOS application binary. It does not deploy HomeLearn's Fastify API or PostgreSQL database. The current API is unauthenticated and intended for loopback-only development. The app's default API URL (`http://127.0.0.1:3000`) refers to the device or simulator itself, so the Local API workflow will not reach a development machine or remote database from an installed build.
 
-The default sample-data prototype can be used to review the mobile experience. Do not point a preview or production build at real family data until authentication, family authorization and a secure hosted API are implemented. Once a suitable backend exists, set `EXPO_PUBLIC_API_URL` in the EAS `preview` and `production` environments to its HTTPS base URL. This value is compiled into the app and is public; never put credentials or secrets in an `EXPO_PUBLIC_` variable.
+The default sample-data prototype can be used to review the mobile experience. The local API remains loopback-only and cannot be reached from a physical iPhone/iPad. Do not point a preview or production build at real family data until authentication, family authorization and a secure hosted API are implemented. Once a suitable backend exists, set `EXPO_PUBLIC_API_URL` in the EAS `preview` and `production` environments to its HTTPS base URL. This value is compiled into the app and is public; never put credentials or secrets in an `EXPO_PUBLIC_` variable.
 
 ## Remaining setup
 
-- An Expo account must initialize/link the remote project and generate `extra.eas.projectId` in `app.json`.
-- Choose a unique iOS bundle identifier during the EAS configuration prompt.
-- Apple Developer signing is needed for builds installed on physical iOS devices and for App Store distribution.
+- Paid Apple Developer signing is needed for EAS device builds and App Store distribution; local Xcode personal development signing can be used on your own device without paid membership.
 - A hosted, authenticated API is needed for Local API workflows in deployed builds.
 
 EAS profiles follow [Expo's `eas.json` build-profile guidance](https://docs.expo.dev/build/eas-json/), and the app-directory placement follows [Expo's monorepo guidance](https://docs.expo.dev/build-reference/build-with-monorepos/).

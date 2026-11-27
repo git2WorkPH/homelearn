@@ -32,7 +32,7 @@ export function SectionHeading({ title, action, onAction }: { readonly title: st
 
 export function LearnerAvatars({ names }: { readonly names: readonly DemoLearner[] }) {
   return <View style={styles.avatars}>
-    {names.map((name, index) => <View key={name} style={[styles.avatar, index > 0 && styles.avatarOverlap, name === 'Leo' ? styles.avatarLeo : styles.avatarAva]}>
+    {names.map((name, index) => <View key={name} style={[styles.avatar, index > 0 && styles.avatarOverlap, name === 'Khael' ? styles.avatarLeo : styles.avatarAva]}>
       <Text style={styles.avatarText}>{name[0]}</Text>
     </View>)}
   </View>;
@@ -219,7 +219,7 @@ export function JournalTab({ records, learnerFilter, setLearnerFilter, onAdd }: 
     <Pressable accessibilityRole="button" onPress={onAdd} style={styles.captureCard}><View style={styles.captureIcon}><Text style={styles.captureIconText}>✎</Text></View><View style={styles.captureCopy}><Text style={styles.captureTitle}>Capture a learning moment</Text><Text style={styles.captureSubtitle}>An observation, a question, an unexpected discovery.</Text></View><Text style={styles.ideaArrow}>›</Text></Pressable>
     <SectionHeading title="Recently observed" />
     {records.map(record => <View key={record.id} style={styles.journalCard}>
-      <View style={[styles.journalAvatar, record.learner === 'Leo' ? styles.avatarLeo : styles.avatarAva]}><Text style={styles.avatarText}>{record.learner[0]}</Text></View>
+      <View style={[styles.journalAvatar, record.learner === 'Khael' ? styles.avatarLeo : styles.avatarAva]}><Text style={styles.avatarText}>{record.learner[0]}</Text></View>
       <View style={styles.journalContent}>
         <View style={styles.journalMeta}><Text style={styles.journalLearner}>{record.learner}</Text><Text style={styles.metaDot}>·</Text><Text style={styles.journalDate}>{record.happenedAt}</Text></View>
         <Text style={styles.journalNote}>{record.note}</Text>

@@ -2,6 +2,10 @@ node_modules/
 dist/
 .expo/
 coverage/
+
+# Expo prebuild output; regenerated locally and may contain machine-specific signing settings.
+apps/mobile/ios/
+
 .env
 .env.*
 !.env.sample

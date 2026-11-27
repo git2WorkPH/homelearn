@@ -5,6 +5,8 @@
   "main": "index.ts",
   "scripts": {
     "start": "expo start --ios",
+    "start:device": "expo start --dev-client --lan",
+    "run:ios:device": "expo run:ios --device",
     "build": "expo export --platform ios",
     "build:eas:simulator": "npx eas-cli@latest build --platform ios --profile preview-simulator",
     "build:eas:device": "npx eas-cli@latest build --platform ios --profile preview-device",
@@ -14,16 +16,17 @@
   },
   "dependencies": {
     "expo": "58.0.26",
+    "expo-dev-client": "~58.0.21",
     "react": "19.3.0",
     "react-native": "0.88.1"
   },
   "devDependencies": {
-    "@types/react": "19.3.0",
-    "@types/jest": "30.0.0",
-    "jest": "30.5.2",
-    "jest-expo": "58.0.15",
     "@react-native/jest-preset": "0.88.1",
     "@testing-library/react-native": "14.1.0",
+    "@types/jest": "30.0.0",
+    "@types/react": "19.3.0",
+    "jest": "30.5.2",
+    "jest-expo": "58.0.15",
     "test-renderer": "1.0.0"
   },
   "jest": {

@@ -39,10 +39,10 @@ export function HomeLearnPrototype({ onOpenApi, onOpenCatalogue }: { readonly on
   const [recordSheetOpen, setRecordSheetOpen] = useState(false);
   const [activityDraft, setActivityDraft] = useState('');
   const [activitySubject, setActivitySubject] = useState('Nature study');
-  const [activityLearners, setActivityLearners] = useState<readonly DemoLearner[]>(['Ava', 'Leo']);
+  const [activityLearners, setActivityLearners] = useState<readonly DemoLearner[]>(['Eli', 'Khael']);
   const [activityScheduled, setActivityScheduled] = useState(true);
   const [recordDraft, setRecordDraft] = useState('');
-  const [recordLearner, setRecordLearner] = useState<DemoLearner>('Ava');
+  const [recordLearner, setRecordLearner] = useState<DemoLearner>('Eli');
   const [recordActivityTitle, setRecordActivityTitle] = useState('Unplanned discovery');
   const [savedMessage, setSavedMessage] = useState('');
   const weekDays = useMemo(() => createWeekDays(), []);

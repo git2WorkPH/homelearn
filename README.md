@@ -8,6 +8,8 @@ Use Node 22.13+ (validated with 26.1.0) and pnpm 11.25.0. Run `pnpm install --fr
 
 - `pnpm dev:api` — Fastify at http://127.0.0.1:3000/health.
 - `pnpm dev:ios` — Expo development server and iOS simulator (Xcode required).
+- `pnpm dev:ios:device` — locally build/install the development app on a connected iPhone/iPad using Xcode.
+- `pnpm dev:ios:device:server` — start Metro for the installed development app over the local network.
 - `pnpm lint`, `pnpm typecheck`, `pnpm test`, `pnpm boundaries` — quality gates.
 - `pnpm build` — TypeScript compilation and local iOS JavaScript/Hermes export. This does not create a signed native application.
 
@@ -39,6 +41,20 @@ EAS Build creates the iOS app binary in Expo's build service; it does not host t
 When LAN support is implemented, the phone/tablet and laptop will need to be on a trusted network, the laptop must stay awake and reachable, and the app build must use the laptop's current reachable IP or local DNS name. Do not use real family data with the current unauthenticated API. See [Expo iOS build profiles](docs/planning/EXPO_IOS_BUILDS.md) for the separate EAS setup and build commands.
 
 No cloud API, analytics integration or app-store submission is configured.
+
+### Test on a physical iPhone/iPad without paid Apple membership
+
+The EAS device and production profiles need paid Apple Developer signing. For personal testing, connect and unlock the iPhone/iPad, tap **Trust** if prompted, and use Xcode with your Apple ID's **Personal Team** for local signing. On iOS 16 and later, enable **Settings → Privacy & Security → Developer Mode**.
+
+From the repository root, run:
+
+```sh
+pnpm dev:ios:device
+```
+
+The first run generates the native iOS project if needed, builds it locally and installs it on the selected device. Once installed, start the device-targeted Metro server with `pnpm dev:ios:device:server`, then open HomeLearn on the device. The phone and laptop must share a reachable local network. Xcode and its iOS platform support are required. Free Personal Team provisioning expires after seven days, so Xcode will need to re-provision the app periodically. This is a personal development install; EAS device distribution and App Store release still require a paid Apple Developer team.
+
+The current local API remains loopback-only and cannot be reached from the physical device. Use the prototype's synthetic sample experience on-device; do not expose the unauthenticated API to Wi-Fi or use real family data.
 
 ## Structure
 
