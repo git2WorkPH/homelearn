@@ -63,8 +63,8 @@ export class PrismaLessonRepository implements LessonRepository {
     }
   }
 
-  async get(id: string): Promise<LessonVersion | undefined> {
-    const row = await this.prisma.lessonVersion.findUnique({ where: { id } });
+  async get(id: string, familyId: string): Promise<LessonVersion | undefined> {
+    const row = await this.prisma.lessonVersion.findFirst({ where: { id, familyId } });
     return row === null ? undefined : mapLessonVersion(row);
   }
 

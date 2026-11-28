@@ -15,8 +15,10 @@ import type { LessonDraftProvider } from "./modules/lessons/index.js";
 import { InMemoryCatalogueRepository } from "./modules/lesson-catalogue/infrastructure/in-memory-catalogue-repository.js";
 import { registerCatalogueRoutes } from "./modules/lesson-catalogue/presentation/catalogue-routes.js";
 import type { PrismaClient } from "./generated/prisma/client.js";
+import type { HomeLearnAuth } from "./modules/identity/auth.js";
+import { registerAuthRoutes, registerFamilyAuthorization } from "./modules/identity/fastify-context.js";
 export function buildApp(
-  dependencies: { readonly prisma?: PrismaClient; readonly lessonDraftProvider?: LessonDraftProvider } = {},
+  dependencies: { readonly prisma?: PrismaClient; readonly auth?: HomeLearnAuth; readonly authBaseURL?: string; readonly lessonDraftProvider?: LessonDraftProvider } = {},
 ) {
   const app = Fastify({
     logger: {
@@ -44,33 +46,27 @@ export function buildApp(
     },
     async () => ({ status: "ok" }),
   );
+  if (dependencies.auth !== undefined && dependencies.authBaseURL !== undefined) {
+    registerAuthRoutes(app, dependencies.auth, dependencies.authBaseURL);
+  }
+  registerFamilyAuthorization(app, dependencies.auth, dependencies.prisma);
   const lessonRepository = dependencies.prisma === undefined
     ? new InMemoryLessonRepository()
     : new PrismaLessonRepository(dependencies.prisma);
   const catalogueRepository = new InMemoryCatalogueRepository();
   void registerLessonRoutes(app, lessonRepository, dependencies.lessonDraftProvider);
   void registerCatalogueRoutes(app, catalogueRepository);
-  void registerCurriculumRoutes(
-    app,
-    dependencies.prisma === undefined
-      ? new InMemoryCurriculumRepository()
-      : new PrismaCurriculumRepository(dependencies.prisma),
-  );
-  void registerPlanningRoutes(
-    app,
-    dependencies.prisma === undefined
-      ? new InMemoryPlanningRepository()
-      : new PrismaPlanningRepository(dependencies.prisma),
-    lessonRepository,
-    catalogueRepository,
-  );
-  void registerLearningRecordRoutes(
-    app,
-    dependencies.prisma === undefined
-      ? new InMemoryLearningRecordRepository()
-      : new PrismaLearningRecordRepository(dependencies.prisma),
-    lessonRepository,
-    catalogueRepository,
-  );
+  const curriculumRepository = dependencies.prisma === undefined
+    ? new InMemoryCurriculumRepository()
+    : new PrismaCurriculumRepository(dependencies.prisma);
+  const planningRepository = dependencies.prisma === undefined
+    ? new InMemoryPlanningRepository()
+    : new PrismaPlanningRepository(dependencies.prisma);
+  const learningRecordRepository = dependencies.prisma === undefined
+    ? new InMemoryLearningRecordRepository()
+    : new PrismaLearningRecordRepository(dependencies.prisma);
+  void registerCurriculumRoutes(app, curriculumRepository);
+  void registerPlanningRoutes(app, planningRepository, lessonRepository, catalogueRepository);
+  void registerLearningRecordRoutes(app, learningRecordRepository, lessonRepository, catalogueRepository, planningRepository, curriculumRepository);
   return app;
 }

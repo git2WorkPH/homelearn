@@ -1,17 +1,17 @@
 # Security and privacy architecture
 
-Status: Proposed controls; no security properties have been implemented or verified.
+Status: Parent session checks, family membership resolution, family-scoped API reads/writes and private mobile cookie storage are implemented locally but have not been security-tested or verified against a migrated database. LAN access remains disabled.
 
 | Threat | Planned control | Evidence required |
 |---|---|---|
-| Cross-family access/IDOR | Membership checks, scoped repositories, composite foreign keys | Two-family read/write/link regressions |
-| Unauthorised changes | Secure sessions, role policy, revision checks, minimal audit trail | Session and permission tests |
+| Cross-family access/IDOR | Server-resolved membership, scoped repositories, family-consistent foreign keys | Two-family read/write/link regressions (NOT RUN) |
+| Unauthorised changes | Better Auth persistent sessions, disabled public sign-up, server actor attribution, sign-in rate limit | Session and permission tests (NOT RUN) |
 | Unsafe uploads | Size/type checks, quarantine, malware strategy, private originals | Rejected-content and access tests |
 | File/report leaks | Authorised retrieval, short-lived links, private exports, cache policy | Unauthorised and expired-link scenarios |
 | Sensitive logging | Structured metadata only, redaction, no narrative bodies | Log inspection and tests |
 | Prompt injection/exfiltration | Untrusted suggestions, no tools with record-write authority, explicit transmission consent | Adversarial provider-output tests |
 
-Choose a maintained authentication integration; do not invent password/session cryptography. Specify cookie security, CSRF protection where applicable, session expiry/revocation and abuse limits before implementation. PostgreSQL row-level security remains an option requiring pool/transaction tests, not a substitute for application authorisation.
+Better Auth provides password hashing and session handling; the API uses its Expo plugin and the iOS app stores cookies in SecureStore. HTTP sign-up is disabled. The initial account is created through an interactive local-only provisioning script. Server cookies use secure transport flags in production; development is restricted to the laptop loopback API. Better Auth's in-memory rate limiter allows at most five email sign-in attempts per minute per client IP. PostgreSQL row-level security remains unimplemented and is not a substitute for application authorisation.
 
 Use synthetic fixtures. Minimise learner fields and avoid requiring exact birth dates or diagnoses. Preserve uploaded originals privately; derive safe previews and decide metadata handling explicitly. No public learner profiles. Define transport and at-rest encryption for the selected deployment, secrets outside source, backup access and restore testing.
 

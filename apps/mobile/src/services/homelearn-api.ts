@@ -1,3 +1,5 @@
+import { authClient } from './auth-client';
+
 const apiUrl = process.env.EXPO_PUBLIC_API_URL ?? 'http://127.0.0.1:3000';
 export const learnerId = 'learner-a';
 export const familyId = 'local-demo';
@@ -133,8 +135,12 @@ export type Assessment = {
 };
 
 export async function request<T>(path: string, body?: unknown, method = 'POST'): Promise<T> {
+  const cookie = await authClient.getCookie();
   const response = await fetch(`${apiUrl}${path}`, {
-    ...(body === undefined ? {} : { method, headers: { 'content-type': 'application/json' }, body: JSON.stringify(body) }),
+    method,
+    credentials: 'omit',
+    headers: { ...(body === undefined ? {} : { 'content-type': 'application/json' }), ...(cookie === null ? {} : { Cookie: cookie }) },
+    ...(body === undefined ? {} : { body: JSON.stringify(body) }),
   });
   if (!response.ok) throw new Error(`API request failed: ${response.status}`);
   return response.json() as Promise<T>;

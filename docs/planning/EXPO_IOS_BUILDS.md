@@ -38,13 +38,13 @@ Sign in to Xcode with an Apple ID and choose its **Personal Team** for automatic
 
 ## Backend and environment limitations
 
-EAS Build creates an iOS application binary. It does not deploy HomeLearn's Fastify API or PostgreSQL database. The current API is unauthenticated and intended for loopback-only development. The app's default API URL (`http://127.0.0.1:3000`) refers to the device or simulator itself, so the Local API workflow will not reach a development machine or remote database from an installed build.
+EAS Build creates an iOS application binary. It does not deploy HomeLearn's Fastify API or PostgreSQL database. Parent authentication and family scoping are implemented, but the API remains loopback-only. The app's default API URL (`http://127.0.0.1:3000`) refers to the device or simulator itself, so the Local API workflow will not reach a development machine or remote database from an installed build.
 
-The default sample-data prototype can be used to review the mobile experience. The local API remains loopback-only and cannot be reached from a physical iPhone/iPad. Do not point a preview or production build at real family data until authentication, family authorization and a secure hosted API are implemented. Once a suitable backend exists, set `EXPO_PUBLIC_API_URL` in the EAS `preview` and `production` environments to its HTTPS base URL. This value is compiled into the app and is public; never put credentials or secrets in an `EXPO_PUBLIC_` variable.
+The default fictional sample-data experience can be used to review the mobile experience. The local API remains loopback-only and cannot be reached from a physical iPhone/iPad. Migration `0004_parent_auth_family_access` must be applied and the parent account provisioned before the authenticated Local API workflow can use the database. Do not point a preview or production build at family data until a secure hosted API is designed and configured. Once a suitable backend exists, set `EXPO_PUBLIC_API_URL` in the EAS `preview` and `production` environments to its HTTPS base URL. This value is compiled into the app and is public; never put credentials or secrets in an `EXPO_PUBLIC_` variable.
 
 ## Remaining setup
 
 - Paid Apple Developer signing is needed for EAS device builds and App Store distribution; local Xcode personal development signing can be used on your own device without paid membership.
-- A hosted, authenticated API is needed for Local API workflows in deployed builds.
+- A hosted API with secure transport is needed for Local API workflows on physical devices or deployed builds.
 
 EAS profiles follow [Expo's `eas.json` build-profile guidance](https://docs.expo.dev/build/eas-json/), and the app-directory placement follows [Expo's monorepo guidance](https://docs.expo.dev/build-reference/build-with-monorepos/).

@@ -10,6 +10,7 @@ export class PrismaCurriculumRepository implements CurriculumRepository {
         id: version.curriculumId,
         versions: { create: {
           id: version.id, versionLabel: version.versionLabel, sourceKind: version.provenance.kind,
+          familyId: version.familyId ?? null,
           publisher: version.provenance.publisher, sourceUrl: version.provenance.sourceUrl ?? null,
           effectiveFrom: new Date(`${version.provenance.effectiveFrom}T00:00:00Z`),
           effectiveTo: version.provenance.effectiveTo === undefined ? null : new Date(`${version.provenance.effectiveTo}T00:00:00Z`),
@@ -22,17 +23,17 @@ export class PrismaCurriculumRepository implements CurriculumRepository {
     if (saved === undefined) throw new Error('CURRICULUM_PERSISTENCE_INVARIANT');
     return this.mapVersion(saved);
   }
-  async get(id: string): Promise<CurriculumVersion | undefined> {
-    const row = await this.prisma.curriculumVersion.findUnique({ where: { id }, include: { outcomes: true } });
+  async get(id: string, familyId: string): Promise<CurriculumVersion | undefined> {
+    const row = await this.prisma.curriculumVersion.findFirst({ where: { id, OR: [{ familyId: null }, { familyId }] }, include: { outcomes: true } });
     return row === null ? undefined : this.mapVersion(row);
   }
-  async list(): Promise<readonly CurriculumVersion[]> {
-    const rows = await this.prisma.curriculumVersion.findMany({ include: { outcomes: true }, orderBy: [{ curriculumId: 'asc' }, { effectiveFrom: 'desc' }] });
+  async list(familyId: string): Promise<readonly CurriculumVersion[]> {
+    const rows = await this.prisma.curriculumVersion.findMany({ where: { OR: [{ familyId: null }, { familyId }] }, include: { outcomes: true }, orderBy: [{ curriculumId: 'asc' }, { effectiveFrom: 'desc' }] });
     return rows.map(row => this.mapVersion(row));
   }
-  private mapVersion(row: { id: string; curriculumId: string; versionLabel: string; sourceKind: string; publisher: string; sourceUrl: string | null; effectiveFrom: Date; effectiveTo: Date | null; retrievedAt: Date; outcomes: readonly { id: string; code: string; title: string; description: string | null }[] }): CurriculumVersion {
+  private mapVersion(row: { id: string; curriculumId: string; familyId: string | null; versionLabel: string; sourceKind: string; publisher: string; sourceUrl: string | null; effectiveFrom: Date; effectiveTo: Date | null; retrievedAt: Date; outcomes: readonly { id: string; code: string; title: string; description: string | null }[] }): CurriculumVersion {
     return {
-      id: row.id, curriculumId: row.curriculumId, versionLabel: row.versionLabel,
+      id: row.id, curriculumId: row.curriculumId, ...(row.familyId === null ? {} : { familyId: row.familyId }), versionLabel: row.versionLabel,
       provenance: { kind: row.sourceKind as 'official' | 'family', publisher: row.publisher, curriculumId: row.curriculumId, versionLabel: row.versionLabel, effectiveFrom: row.effectiveFrom.toISOString().slice(0, 10), retrievedAt: row.retrievedAt.toISOString(), ...(row.effectiveTo === null ? {} : { effectiveTo: row.effectiveTo.toISOString().slice(0, 10) }), ...(row.sourceUrl === null ? {} : { sourceUrl: row.sourceUrl }) },
       outcomes: row.outcomes.map(item => ({ id: item.id, code: item.code, title: item.title, ...(item.description === null ? {} : { description: item.description }) })),
     };

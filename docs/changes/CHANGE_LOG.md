@@ -1,5 +1,13 @@
 # Change log and justification
 
+## 28 November 2026 — Parent login and family authorization
+
+Authorization: user approved a parent-only basic login with no public sign-up, Better Auth dependencies, family membership and server-side family authorization, mobile secure session storage, documentation updates, and preparation of an additive migration. The user reported an earlier migration was applied; repository inspection showed only migrations `0001`–`0003` existed before this work, so `0004_parent_auth_family_access` is new and was not applied here.
+
+Changes: add Better Auth email/password login/logout, disable HTTP sign-up, provide a local interactive parent-account provisioning command, store mobile session cookies with Expo SecureStore, add Family/FamilyMember tables and scoped server-side authorization, scope repository reads/updates to the authenticated family, add family-consistent database constraints, and update setup/security/traceability documents. Keep the API bound to loopback; physical-device LAN access remains disabled.
+
+Validation: API/mobile typechecks, Prisma Client generation and schema validation pass. Tests were not added or run. Root Oxlint and build checks are pending final review. Migration deployment, live database validation, account provisioning, device login and transport security are not verified. No commit or push.
+
 ## 27 November 2026 — Replace prototype labels in the app
 
 Authorization: user asked to stop calling the main HomeLearn experience a prototype. Replace visible labels with HomeLearn/learning/sample wording; keep the existing screens, sample data and internal component names. Update existing interaction-test expectations to match the product language.

@@ -1,10 +1,10 @@
 # Functional requirements
 
-Status: Draft specification; every requirement is currently NOT_STARTED.
+Status: Draft specification; FR-001 has a partial implementation for parent login and family authorization. Other requirements remain at their recorded milestone status.
 
 | ID | Required behaviour | Priority |
 |---|---|---|
-| FR-001 | Adult registration/authentication; family creation, memberships, multiple learners, preferences and server-side family isolation | P0 |
+| FR-001 | Parent email/password authentication without public sign-up; private account provisioning; family membership and server-side family isolation. Family/learner management UI and multiple learner profiles remain pending | P0 |
 | FR-002 | Resumable onboarding: mode, learners, preferences, goals and initial plan; reversible mode selection without data loss | P0 |
 | FR-003 | Subjects, custom outcomes, learner goals, reusable curriculum templates, versioned official references and provenance | P0 |
 | FR-004 | Editable plans and activities, one or more learner assignments, optional scheduling, rescheduling history and reusable lesson templates; parents can adapt a selected lesson into a family activity while preserving the source lesson version | P0 |

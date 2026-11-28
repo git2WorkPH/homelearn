@@ -21,4 +21,4 @@ Current implementation: family lesson authoring and optional local AI drafting a
 
 ## Approved sequence adjustment — 20 November 2026
 
-After HL-001, implement HL-003A configuration domain and tests before authentication. HL-002 is deferred, not removed from MVP. No educational API or real family data may be enabled before authentication and family isolation. Remaining HL-003 onboarding/UI/persistence still depends on HL-002. See [change scope](../changes/HL-003A-configuration-domain.md).
+HL-002 now has a partial local implementation: parent login, private account provisioning and one-family API authorization. Its migration still needs applying and the family/learner screens and security acceptance evidence remain pending. No physical-device or LAN API access is enabled. Remaining HL-003 onboarding/UI/persistence depends on family/learner management. See [parent login change record](../changes/parent-login-family-access.md) and [HL-003A scope](../changes/HL-003A-configuration-domain.md).

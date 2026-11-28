@@ -7,6 +7,95 @@ datasource db {
   provider = "postgresql"
 }
 
+model User {
+  id                 String         @id @db.VarChar(200)
+  name               String         @db.VarChar(255)
+  email              String         @unique @db.VarChar(255)
+  emailVerified      Boolean        @default(false)
+  image              String?        @db.Text
+  createdAt          DateTime       @default(now()) @db.Timestamptz(3)
+  updatedAt          DateTime       @updatedAt @db.Timestamptz(3)
+  sessions           Session[]
+  accounts           Account[]
+  familyMemberships  FamilyMember[]
+
+  @@map("user")
+}
+
+model Session {
+  id        String   @id @db.VarChar(200)
+  expiresAt DateTime @db.Timestamptz(3)
+  token     String   @unique @db.VarChar(255)
+  createdAt DateTime @default(now()) @db.Timestamptz(3)
+  updatedAt DateTime @updatedAt @db.Timestamptz(3)
+  ipAddress String?  @db.VarChar(255)
+  userAgent String?  @db.Text
+  userId    String   @db.VarChar(200)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("session")
+}
+
+model Account {
+  id                    String    @id @db.VarChar(200)
+  accountId             String    @db.VarChar(255)
+  providerId            String    @db.VarChar(255)
+  userId                String    @db.VarChar(200)
+  accessToken           String?   @db.Text
+  refreshToken          String?   @db.Text
+  idToken               String?   @db.Text
+  accessTokenExpiresAt  DateTime? @db.Timestamptz(3)
+  refreshTokenExpiresAt DateTime? @db.Timestamptz(3)
+  scope                 String?   @db.Text
+  password              String?   @db.Text
+  createdAt             DateTime  @default(now()) @db.Timestamptz(3)
+  updatedAt             DateTime  @updatedAt @db.Timestamptz(3)
+  user                  User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("account")
+}
+
+model Verification {
+  id         String   @id @db.VarChar(200)
+  identifier String   @db.VarChar(255)
+  value      String   @db.Text
+  expiresAt  DateTime @db.Timestamptz(3)
+  createdAt  DateTime @default(now()) @db.Timestamptz(3)
+  updatedAt  DateTime @default(now()) @updatedAt @db.Timestamptz(3)
+
+  @@index([identifier])
+  @@map("verification")
+}
+
+model Family {
+  id        String         @id @db.VarChar(200)
+  name      String         @db.VarChar(200)
+  createdAt DateTime       @default(now()) @db.Timestamptz(3)
+  members   FamilyMember[]
+  lessons   LessonVersion[]
+  plans     LearningPlan[]
+  activities Activity[]
+  experiences LearningExperience[]
+  curriculumVersions CurriculumVersion[]
+
+  @@map("Family")
+}
+
+model FamilyMember {
+  userId    String   @db.VarChar(200)
+  familyId  String   @db.VarChar(200)
+  role      String   @default("parent") @db.VarChar(40)
+  createdAt DateTime @default(now()) @db.Timestamptz(3)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  family    Family   @relation(fields: [familyId], references: [id], onDelete: Cascade)
+
+  @@id([userId, familyId])
+  @@index([familyId, userId])
+  @@map("FamilyMember")
+}
+
 model Curriculum {
   id        String              @id @db.VarChar(200)
   versions  CurriculumVersion[]
@@ -34,16 +123,19 @@ model LessonVersion {
   aiModel             String?                   @db.VarChar(120)
   parentApprovedAt    DateTime?                 @db.Timestamptz(3)
   createdAt           DateTime                  @default(now()) @db.Timestamptz(3)
+  family              Family                    @relation(fields: [familyId], references: [id], onDelete: Restrict)
   plannedActivities   Activity[]
   learningRecords     LearnerLearningRecord[]
 
   @@unique([familyId, lessonKey, versionLabel])
+  @@unique([familyId, id])
   @@index([familyId, createdAt])
 }
 
 model CurriculumVersion {
   id            String                @id @db.VarChar(240)
   curriculumId  String                @db.VarChar(200)
+  familyId      String?               @db.VarChar(200)
   versionLabel  String                @db.VarChar(100)
   sourceKind    String                @db.VarChar(20)
   publisher     String                @db.VarChar(200)
@@ -52,12 +144,14 @@ model CurriculumVersion {
   effectiveTo   DateTime?             @db.Date
   retrievedAt   DateTime              @db.Timestamptz(3)
   createdAt     DateTime              @default(now()) @db.Timestamptz(3)
+  family        Family?               @relation(fields: [familyId], references: [id], onDelete: Restrict)
   curriculum    Curriculum            @relation(fields: [curriculumId], references: [id], onDelete: Restrict)
   outcomes      LearningOutcome[]
   learnerGoals  CurriculumLearnerGoal[]
 
   @@unique([curriculumId, versionLabel])
   @@index([curriculumId, effectiveFrom])
+  @@index([familyId, curriculumId])
 }
 
 model LearningOutcome {
@@ -97,8 +191,10 @@ model LearningPlan {
   endsOn    DateTime   @db.Date
   status    String     @db.VarChar(20)
   createdAt DateTime   @default(now()) @db.Timestamptz(3)
+  family    Family     @relation(fields: [familyId], references: [id], onDelete: Restrict)
   activities Activity[]
   @@index([familyId, startsOn])
+  @@unique([familyId, id])
 }
 
 model Activity {
@@ -110,11 +206,14 @@ model Activity {
   catalogLessonRef String?         @db.VarChar(300)
   schedule    Json?
   createdAt   DateTime            @default(now()) @db.Timestamptz(3)
-  plan        LearningPlan        @relation(fields: [planId], references: [id], onDelete: Restrict)
+  family      Family              @relation(fields: [familyId], references: [id], onDelete: Restrict)
+  plan        LearningPlan        @relation(fields: [familyId, planId], references: [familyId, id], onDelete: Restrict)
   assignments ActivityAssignment[]
   revisions   ActivityScheduleRevision[]
-  lessonVersion LessonVersion?    @relation(fields: [lessonVersionId], references: [id], onDelete: Restrict)
+  experiences LearningExperience[]
+  lessonVersion LessonVersion?    @relation(fields: [familyId, lessonVersionId], references: [familyId, id], onDelete: Restrict)
   @@index([familyId, planId])
+  @@unique([familyId, id])
   @@index([lessonVersionId])
   @@index([catalogLessonRef])
 }
@@ -144,6 +243,8 @@ model LearningExperience {
   happenedAt DateTime              @db.Timestamptz(3)
   activityId String?               @db.VarChar(200)
   title     String                 @db.VarChar(500)
+  family    Family                 @relation(fields: [familyId], references: [id], onDelete: Restrict)
+  activity  Activity?              @relation(fields: [familyId, activityId], references: [familyId, id], onDelete: Restrict)
   records   LearnerLearningRecord[]
   @@index([familyId, happenedAt])
 }

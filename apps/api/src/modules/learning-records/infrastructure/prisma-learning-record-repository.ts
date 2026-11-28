@@ -79,16 +79,16 @@ export class PrismaLearningRecordRepository implements LearningRecordRepository 
     );
   }
 
-  async getExperience(id: string): Promise<LearningExperience | undefined> {
-    const row = await this.prisma.learningExperience.findUnique({
-      where: { id },
+  async getExperience(id: string, familyId: string): Promise<LearningExperience | undefined> {
+    const row = await this.prisma.learningExperience.findFirst({
+      where: { id, familyId },
     });
     return row === null ? undefined : mapExperience(row);
   }
-  async listExperiences(): Promise<readonly LearningExperience[]> {
+  async listExperiences(familyId: string): Promise<readonly LearningExperience[]> {
     return (
       await this.prisma.learningExperience.findMany({
-        orderBy: { happenedAt: "desc" },
+        where: { familyId }, orderBy: { happenedAt: "desc" },
       })
     ).map(mapExperience);
   }
@@ -119,31 +119,35 @@ export class PrismaLearningRecordRepository implements LearningRecordRepository 
     return mapRecord(row);
   }
   async getLearnerRecord(
-    id: string,
+    id: string, familyId: string,
   ): Promise<LearnerLearningRecord | undefined> {
     const row = await this.prisma.learnerLearningRecord.findUnique({
-      where: { id },
+      where: { id, experience: { familyId } },
     });
     return row === null ? undefined : mapRecord(row);
   }
 
   async listLearnerRecords(
-    experienceId?: string,
+    familyId: string, experienceId?: string,
   ): Promise<readonly LearnerLearningRecord[]> {
     const rows = await this.prisma.learnerLearningRecord.findMany({
-      where: experienceId === undefined ? {} : { experienceId },
+      where: { experience: { familyId, ...(experienceId === undefined ? {} : { id: experienceId }) } },
     });
     return rows.map(mapRecord);
   }
 
   async updateLearnerRecord(
     item: LearnerLearningRecord,
+    familyId: string,
   ): Promise<LearnerLearningRecord> {
-    const row = await this.prisma.learnerLearningRecord.update({
-      where: { id: item.id },
+    const existing = await this.getLearnerRecord(item.id, familyId);
+    if (existing === undefined) throw new Error('LEARNER_RECORD_NOT_FOUND');
+    const result = await this.prisma.learnerLearningRecord.updateMany({
+      where: { id: item.id, experience: { familyId } },
       data: { observation: item.observation ?? null },
     });
-    return mapRecord(row);
+    if (result.count !== 1) throw new Error('LEARNER_RECORD_NOT_FOUND');
+    return item;
   }
 
   async createAssessment(item: OutcomeAssessment): Promise<OutcomeAssessment> {
@@ -163,9 +167,10 @@ export class PrismaLearningRecordRepository implements LearningRecordRepository 
 
   async listAssessments(
     learnerRecordId: string,
+    familyId: string,
   ): Promise<readonly OutcomeAssessment[]> {
     const rows = await this.prisma.outcomeAssessment.findMany({
-      where: { learnerRecordId },
+      where: { learnerRecordId, learnerRecord: { experience: { familyId } } },
       orderBy: { assessedAt: "asc" },
     });
     return rows.map((row) => ({

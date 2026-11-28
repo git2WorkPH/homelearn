@@ -12,13 +12,13 @@ export class PrismaPlanningRepository implements PlanningRepository {
     return { ...row, startsOn: row.startsOn.toISOString().slice(0, 10), endsOn: row.endsOn.toISOString().slice(0, 10), status: row.status as LearningPlan['status'] };
   }
 
-  async getPlan(id: string): Promise<LearningPlan | undefined> {
-    const row = await this.prisma.learningPlan.findUnique({ where: { id } });
+  async getPlan(id: string, familyId: string): Promise<LearningPlan | undefined> {
+    const row = await this.prisma.learningPlan.findFirst({ where: { id, familyId } });
     return row === null ? undefined : { ...row, startsOn: row.startsOn.toISOString().slice(0, 10), endsOn: row.endsOn.toISOString().slice(0, 10), status: row.status as LearningPlan['status'] };
   }
 
-  async listPlans(): Promise<readonly LearningPlan[]> {
-    const rows = await this.prisma.learningPlan.findMany({ orderBy: { startsOn: 'desc' } });
+  async listPlans(familyId: string): Promise<readonly LearningPlan[]> {
+    const rows = await this.prisma.learningPlan.findMany({ where: { familyId }, orderBy: { startsOn: 'desc' } });
     return rows.map(row => ({ ...row, startsOn: row.startsOn.toISOString().slice(0, 10), endsOn: row.endsOn.toISOString().slice(0, 10), status: row.status as LearningPlan['status'] }));
   }
 
@@ -27,18 +27,18 @@ export class PrismaPlanningRepository implements PlanningRepository {
     return activity;
   }
 
-  async getActivity(id: string): Promise<Activity | undefined> {
-    const row = await this.prisma.activity.findUnique({ where: { id }, include: { assignments: { orderBy: { learnerId: 'asc' } }, revisions: { orderBy: { changedAt: 'asc' } } } });
+  async getActivity(id: string, familyId: string): Promise<Activity | undefined> {
+    const row = await this.prisma.activity.findFirst({ where: { id, familyId }, include: { assignments: { orderBy: { learnerId: 'asc' } }, revisions: { orderBy: { changedAt: 'asc' } } } });
     return row === null ? undefined : this.mapActivity(row);
   }
 
-  async listActivities(planId?: string): Promise<readonly Activity[]> {
-    const rows = await this.prisma.activity.findMany({ where: planId === undefined ? {} : { planId }, include: { assignments: { orderBy: { learnerId: 'asc' } }, revisions: { orderBy: { changedAt: 'asc' } } }, orderBy: { createdAt: 'asc' } });
+  async listActivities(familyId: string, planId?: string): Promise<readonly Activity[]> {
+    const rows = await this.prisma.activity.findMany({ where: { familyId, ...(planId === undefined ? {} : { planId }) }, include: { assignments: { orderBy: { learnerId: 'asc' } }, revisions: { orderBy: { changedAt: 'asc' } } }, orderBy: { createdAt: 'asc' } });
     return rows.map(row => this.mapActivity(row));
   }
 
   async updateActivity(activity: Activity, revision?: ScheduleRevision): Promise<Activity> {
-    const existing = await this.getActivity(activity.id);
+    const existing = await this.getActivity(activity.id, activity.familyId);
     if (existing === undefined) throw new Error('ACTIVITY_NOT_FOUND');
     await this.prisma.$transaction(async tx => {
       await tx.activity.update({ where: { id: activity.id }, data: { title: activity.title, lessonVersionId: activity.lessonVersionId ?? null, catalogLessonRef: activity.catalogLessonRef ?? null, schedule: activity.schedule === undefined ? Prisma.DbNull : { startsAt: activity.schedule.startsAt, endsAt: activity.schedule.endsAt, timeZone: activity.schedule.timeZone } } });

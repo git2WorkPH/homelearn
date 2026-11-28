@@ -17,6 +17,7 @@ export interface LearningOutcome {
 export interface CurriculumVersion {
   readonly id: string;
   readonly curriculumId: string;
+  readonly familyId?: string;
   readonly versionLabel: string;
   readonly provenance: CurriculumProvenance;
   readonly outcomes: readonly LearningOutcome[];

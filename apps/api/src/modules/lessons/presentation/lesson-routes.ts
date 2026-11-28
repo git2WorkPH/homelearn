@@ -3,6 +3,7 @@ import { z } from 'zod';
 import type { LessonDraftProvider } from '../application/lesson-draft-provider.js';
 import type { LessonRepository } from '../application/lesson-repository.js';
 import { createLessonVersion, LessonError } from '../domain/lesson-version.js';
+import { requireHomeLearnActor } from '../../identity/fastify-context.js';
 
 const lessonBodySchema = z.object({
   id: z.string().trim().min(1).max(300), lessonKey: z.string().trim().min(1).max(200),
@@ -33,25 +34,31 @@ export async function registerLessonRoutes(
   app.get('/api/v1/lesson-versions', async (request, reply) => {
     const query = z.object({ familyId: z.string().trim().min(1).max(200) }).strict().safeParse(request.query);
     if (!query.success) return reply.code(400).send({ error: 'INVALID_REQUEST' });
-    return reply.header('cache-control', 'no-store').send(await repository.list(query.data.familyId));
+    const actor = requireHomeLearnActor(request);
+    if (query.data.familyId !== actor.familyId) return reply.code(404).send({ error: 'FAMILY_NOT_FOUND' });
+    return reply.header('cache-control', 'no-store').send(await repository.list(actor.familyId));
   });
 
   app.get<{ Params: { lessonVersionId: string } }>('/api/v1/lesson-versions/:lessonVersionId', async (request, reply) => {
     const query = z.object({ familyId: z.string().trim().min(1).max(200) }).strict().safeParse(request.query);
     if (!query.success) return reply.code(400).send({ error: 'INVALID_REQUEST' });
-    const lesson = await repository.get(request.params.lessonVersionId);
-    if (lesson === undefined || lesson.familyId !== query.data.familyId) return reply.code(404).send({ error: 'LESSON_VERSION_NOT_FOUND' });
+    const actor = requireHomeLearnActor(request);
+    if (query.data.familyId !== actor.familyId) return reply.code(404).send({ error: 'LESSON_VERSION_NOT_FOUND' });
+    const lesson = await repository.get(request.params.lessonVersionId, actor.familyId);
+    if (lesson === undefined) return reply.code(404).send({ error: 'LESSON_VERSION_NOT_FOUND' });
     return reply.header('cache-control', 'no-store').send(lesson);
   });
 
   app.post('/api/v1/lesson-versions', async (request, reply) => {
     const parsed = lessonBodySchema.safeParse(request.body);
     if (!parsed.success) return reply.code(400).send({ error: 'INVALID_REQUEST' });
+    const actor = requireHomeLearnActor(request);
+    if (parsed.data.familyId !== actor.familyId) return reply.code(404).send({ error: 'FAMILY_NOT_FOUND' });
     try {
       const input = parsed.data;
       if (input.creationMethod === 'ai-generated' && (draftProvider === undefined || input.aiProvider !== draftProvider.providerId || input.aiModel !== draftProvider.modelId)) return reply.code(400).send({ error: 'AI_PROVENANCE_MISMATCH' });
       const lesson = createLessonVersion({
-        id: input.id, lessonKey: input.lessonKey, familyId: input.familyId, versionLabel: input.versionLabel,
+        id: input.id, lessonKey: input.lessonKey, familyId: actor.familyId, versionLabel: input.versionLabel,
         title: input.title, subject: input.subject, strand: input.strand, learningLevel: input.learningLevel,
         learningGoal: input.learningGoal, successCriteria: input.successCriteria, materials: input.materials,
         steps: input.steps, creationMethod: input.creationMethod,

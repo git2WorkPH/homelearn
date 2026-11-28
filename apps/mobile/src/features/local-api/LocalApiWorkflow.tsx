@@ -20,7 +20,7 @@ import {
   type Plan,
 } from '../../services/homelearn-api';
 
-export function LocalApiWorkflow({ initialScreen, onBackToPrototype }: { readonly initialScreen: 'workspace' | 'catalogue'; readonly onBackToPrototype: () => void }) {
+export function LocalApiWorkflow({ initialScreen, onBackToPrototype, onSignOut }: { readonly initialScreen: 'workspace' | 'catalogue'; readonly onBackToPrototype: () => void; readonly onSignOut: () => void }) {
   const [plans, setPlans] = useState<Plan[]>([]);
   const [activities, setActivities] = useState<Activity[]>([]);
   const [experiences, setExperiences] = useState<Experience[]>([]);
@@ -99,7 +99,7 @@ export function LocalApiWorkflow({ initialScreen, onBackToPrototype }: { readonl
       setSelectedPlanId(current => current || nextPlans[0]?.id || '');
       setMessage('');
     } catch {
-      setMessage('Start the local HomeLearn API to load and save synthetic demo data.');
+      setMessage('Start the local HomeLearn API to load and save your family learning data.');
     }
   }, []);
 
@@ -301,8 +301,9 @@ export function LocalApiWorkflow({ initialScreen, onBackToPrototype }: { readonl
   return <SafeAreaView style={styles.safeArea}><ScrollView contentContainerStyle={styles.page}><View style={styles.content}>
     <Button
      title="← Back to HomeLearn" onPress={onBackToPrototype} />
+    <Button title="Sign out" onPress={onSignOut} />
     <Text accessibilityRole="header" style={styles.title}>HomeLearn</Text>
-    <Text style={styles.body}>Plan learning and record what happens. Local demo uses synthetic family and learner IDs only.</Text>
+    <Text style={styles.body}>Plan learning and record what happens. Data is saved to your HomeLearn family database on this Mac.</Text>
     <View style={styles.navigation}>
       <Button title="Learning workspace" onPress={() => setScreen('workspace')} />
       <Button title={`Starter catalogue (${catalogueLessons.length})`} onPress={() => setScreen('catalogue')} />

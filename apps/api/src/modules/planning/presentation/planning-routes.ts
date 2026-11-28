@@ -4,36 +4,79 @@ import { assignActivityToPlan, createActivity, createLearningPlan, editActivity,
 import type { PlanningRepository } from '../application/planning-repository.js';
 import type { LessonRepository } from '../../lessons/index.js';
 import type { CatalogueRepository } from '../../lesson-catalogue/index.js';
-const planSchema = z.object({ id: z.string(), familyId: z.string(), title: z.string(), startsOn: z.string(), endsOn: z.string(), status: z.enum(['draft','active','archived']) }).strict();
+import { requireHomeLearnActor } from '../../identity/fastify-context.js';
+
+const planSchema = z.object({ id: z.string(), familyId: z.string(), title: z.string(), startsOn: z.string(), endsOn: z.string(), status: z.enum(['draft', 'active', 'archived']) }).strict();
 const scheduleSchema = z.object({ startsAt: z.string(), endsAt: z.string(), timeZone: z.string() }).strict();
 const activitySchema = z.object({ id: z.string(), familyId: z.string(), planId: z.string(), title: z.string(), learnerIds: z.array(z.string()).min(1), schedule: scheduleSchema.optional(), lessonVersionId: z.string().trim().min(1).max(300).optional(), catalogLessonRef: z.string().trim().min(1).max(300).optional() }).strict();
+
 export async function registerPlanningRoutes(app: FastifyInstance, repository: PlanningRepository, lessons: LessonRepository, catalogue: CatalogueRepository): Promise<void> {
-  app.get('/api/v1/plans', async (_request, reply) => reply.header('cache-control','no-store').send(await repository.listPlans()));
+  app.get('/api/v1/plans', async (request, reply) => reply.header('cache-control', 'no-store').send(await repository.listPlans(requireHomeLearnActor(request).familyId)));
+
   app.post('/api/v1/plans', async (request, reply) => {
-    const parsed=planSchema.safeParse(request.body); if(!parsed.success) return reply.code(400).send({error:'INVALID_REQUEST'});
-    try { const plan=createLearningPlan(parsed.data); const saved=await repository.createPlan(plan); return reply.code(201).header('location',`/api/v1/plans/${encodeURIComponent(saved.id)}`).send(saved); }
-    catch(error) { if(error instanceof PlanningError) return reply.code(400).send({error:error.code}); if(error instanceof Error&&error.message==='DUPLICATE_PLAN') return reply.code(409).send({error:'PLAN_ALREADY_EXISTS'}); throw error; }
+    const parsed = planSchema.safeParse(request.body);
+    if (!parsed.success) return reply.code(400).send({ error: 'INVALID_REQUEST' });
+    const actor = requireHomeLearnActor(request);
+    if (parsed.data.familyId !== actor.familyId) return reply.code(404).send({ error: 'FAMILY_NOT_FOUND' });
+    try {
+      const saved = await repository.createPlan(createLearningPlan({ ...parsed.data, familyId: actor.familyId }));
+      return reply.code(201).header('location', `/api/v1/plans/${encodeURIComponent(saved.id)}`).send(saved);
+    } catch (error) {
+      if (error instanceof PlanningError) return reply.code(400).send({ error: error.code });
+      if (error instanceof Error && error.message === 'DUPLICATE_PLAN') return reply.code(409).send({ error: 'PLAN_ALREADY_EXISTS' });
+      throw error;
+    }
   });
-  app.get('/api/v1/activities', async (request,reply) => { const query=z.object({planId:z.string().optional()}).safeParse(request.query); if(!query.success)return reply.code(400).send({error:'INVALID_REQUEST'}); return reply.header('cache-control','no-store').send(await repository.listActivities(query.data.planId)); });
-  app.post('/api/v1/activities', async (request,reply) => {
-    const parsed=activitySchema.safeParse(request.body); if(!parsed.success)return reply.code(400).send({error:'INVALID_REQUEST'});
-    try { const plan=await repository.getPlan(parsed.data.planId); if(plan===undefined)return reply.code(404).send({error:'PLAN_NOT_FOUND'}); const input=parsed.data; if(input.lessonVersionId!==undefined){const lesson=await lessons.get(input.lessonVersionId);if(lesson===undefined||lesson.familyId!==input.familyId)return reply.code(404).send({error:'LESSON_VERSION_NOT_FOUND'});} if(input.catalogLessonRef!==undefined&&await catalogue.get(input.catalogLessonRef)===undefined)return reply.code(404).send({error:'CATALOGUE_LESSON_NOT_FOUND'}); const activity=createActivity({ id:input.id, familyId:input.familyId, planId:input.planId, title:input.title, learnerIds:input.learnerIds, ...(input.schedule===undefined?{}:{schedule:input.schedule}), ...(input.lessonVersionId===undefined?{}:{lessonVersionId:input.lessonVersionId}), ...(input.catalogLessonRef===undefined?{}:{catalogLessonRef:input.catalogLessonRef}) }); assignActivityToPlan(activity,plan); const saved=await repository.createActivity(activity); return reply.code(201).header('location',`/api/v1/activities/${encodeURIComponent(saved.id)}`).send(saved); }
-    catch(error) { if(error instanceof PlanningError)return reply.code(400).send({error:error.code}); if(error instanceof Error&&error.message==='DUPLICATE_ACTIVITY')return reply.code(409).send({error:'ACTIVITY_ALREADY_EXISTS'}); throw error; }
+
+  app.get('/api/v1/activities', async (request, reply) => {
+    const query = z.object({ planId: z.string().optional() }).strict().safeParse(request.query);
+    if (!query.success) return reply.code(400).send({ error: 'INVALID_REQUEST' });
+    return reply.header('cache-control', 'no-store').send(await repository.listActivities(requireHomeLearnActor(request).familyId, query.data.planId));
   });
-  app.patch<{Params:{activityId:string}}>('/api/v1/activities/:activityId', async (request, reply) => {
+
+  app.post('/api/v1/activities', async (request, reply) => {
+    const parsed = activitySchema.safeParse(request.body);
+    if (!parsed.success) return reply.code(400).send({ error: 'INVALID_REQUEST' });
+    const actor = requireHomeLearnActor(request);
+    if (parsed.data.familyId !== actor.familyId) return reply.code(404).send({ error: 'FAMILY_NOT_FOUND' });
+    try {
+      const input = parsed.data;
+      const plan = await repository.getPlan(input.planId, actor.familyId);
+      if (plan === undefined) return reply.code(404).send({ error: 'PLAN_NOT_FOUND' });
+      if (input.lessonVersionId !== undefined) {
+        const lesson = await lessons.get(input.lessonVersionId, actor.familyId);
+        if (lesson === undefined || lesson.familyId !== actor.familyId) return reply.code(404).send({ error: 'LESSON_VERSION_NOT_FOUND' });
+      }
+      if (input.catalogLessonRef !== undefined && await catalogue.get(input.catalogLessonRef) === undefined) return reply.code(404).send({ error: 'CATALOG_LESSON_NOT_FOUND' });
+      const activity = createActivity({ id: input.id, familyId: actor.familyId, planId: input.planId, title: input.title, learnerIds: input.learnerIds, ...(input.schedule === undefined ? {} : { schedule: input.schedule }), ...(input.lessonVersionId === undefined ? {} : { lessonVersionId: input.lessonVersionId }), ...(input.catalogLessonRef === undefined ? {} : { catalogLessonRef: input.catalogLessonRef }) });
+      assignActivityToPlan(activity, plan);
+      const saved = await repository.createActivity(activity);
+      return reply.code(201).header('location', `/api/v1/activities/${encodeURIComponent(saved.id)}`).send(saved);
+    } catch (error) {
+      if (error instanceof PlanningError) return reply.code(400).send({ error: error.code });
+      if (error instanceof Error && error.message === 'DUPLICATE_ACTIVITY') return reply.code(409).send({ error: 'ACTIVITY_ALREADY_EXISTS' });
+      throw error;
+    }
+  });
+
+  app.patch<{ Params: { activityId: string } }>('/api/v1/activities/:activityId', async (request, reply) => {
     const parsed = z.object({ title: z.string().optional(), learnerIds: z.array(z.string()).min(1).optional(), schedule: scheduleSchema.nullable().optional(), lessonVersionId: z.string().trim().min(1).max(300).nullable().optional(), catalogLessonRef: z.string().trim().min(1).max(300).nullable().optional(), changedAt: z.string().optional(), changedBy: z.string().optional() }).strict().refine(input => input.title !== undefined || input.learnerIds !== undefined || Object.hasOwn(input, 'schedule') || Object.hasOwn(input, 'lessonVersionId') || Object.hasOwn(input, 'catalogLessonRef')).safeParse(request.body);
     if (!parsed.success) return reply.code(400).send({ error: 'INVALID_REQUEST' });
-    const current = await repository.getActivity(request.params.activityId);
+    const actor = requireHomeLearnActor(request);
+    const current = await repository.getActivity(request.params.activityId, actor.familyId);
     if (current === undefined) return reply.code(404).send({ error: 'ACTIVITY_NOT_FOUND' });
     try {
       let updated = editActivity(current, { ...(parsed.data.title === undefined ? {} : { title: parsed.data.title }), ...(parsed.data.learnerIds === undefined ? {} : { learnerIds: parsed.data.learnerIds }), ...(parsed.data.lessonVersionId === undefined ? {} : { lessonVersionId: parsed.data.lessonVersionId }), ...(parsed.data.catalogLessonRef === undefined ? {} : { catalogLessonRef: parsed.data.catalogLessonRef }) });
-      if (updated.lessonVersionId !== undefined) { const lesson = await lessons.get(updated.lessonVersionId); if (lesson === undefined || lesson.familyId !== updated.familyId) return reply.code(404).send({ error: 'LESSON_VERSION_NOT_FOUND' }); }
-      if (updated.catalogLessonRef !== undefined && await catalogue.get(updated.catalogLessonRef) === undefined) return reply.code(404).send({ error: 'CATALOGUE_LESSON_NOT_FOUND' });
+      if (updated.lessonVersionId !== undefined) {
+        const lesson = await lessons.get(updated.lessonVersionId, actor.familyId);
+        if (lesson === undefined || lesson.familyId !== actor.familyId) return reply.code(404).send({ error: 'LESSON_VERSION_NOT_FOUND' });
+      }
+      if (updated.catalogLessonRef !== undefined && await catalogue.get(updated.catalogLessonRef) === undefined) return reply.code(404).send({ error: 'CATALOG_LESSON_NOT_FOUND' });
       let revision = undefined;
       if (Object.hasOwn(parsed.data, 'schedule')) {
         if (parsed.data.changedAt === undefined || parsed.data.changedBy === undefined) return reply.code(400).send({ error: 'SCHEDULE_CHANGE_AUDIT_REQUIRED' });
         const previousHistoryLength = updated.scheduleHistory.length;
-        updated = rescheduleActivity(updated, parsed.data.schedule ?? undefined, parsed.data.changedAt, parsed.data.changedBy);
+        updated = rescheduleActivity(updated, parsed.data.schedule ?? undefined, new Date().toISOString(), actor.userId);
         if (updated.scheduleHistory.length > previousHistoryLength) revision = updated.scheduleHistory.at(-1);
       }
       return reply.send(await repository.updateActivity(updated, revision));
@@ -42,9 +85,20 @@ export async function registerPlanningRoutes(app: FastifyInstance, repository: P
       throw error;
     }
   });
-  app.post<{Params:{activityId:string}}>('/api/v1/activities/:activityId/reschedule',async(request,reply)=>{
-    const parsed=z.object({schedule:scheduleSchema.optional(),changedAt:z.string(),changedBy:z.string()}).strict().safeParse(request.body); if(!parsed.success)return reply.code(400).send({error:'INVALID_REQUEST'});
-    const activity=await repository.getActivity(request.params.activityId); if(activity===undefined)return reply.code(404).send({error:'ACTIVITY_NOT_FOUND'});
-    try { const updated=rescheduleActivity(activity,parsed.data.schedule,parsed.data.changedAt,parsed.data.changedBy); const revision=updated.scheduleHistory.length>activity.scheduleHistory.length?updated.scheduleHistory.at(-1):undefined; return reply.send(await repository.updateActivity(updated,revision)); } catch(error){if(error instanceof PlanningError)return reply.code(400).send({error:error.code});throw error;}
+
+  app.post<{ Params: { activityId: string } }>('/api/v1/activities/:activityId/reschedule', async (request, reply) => {
+    const parsed = z.object({ schedule: scheduleSchema.optional(), changedAt: z.string(), changedBy: z.string() }).strict().safeParse(request.body);
+    if (!parsed.success) return reply.code(400).send({ error: 'INVALID_REQUEST' });
+    const actor = requireHomeLearnActor(request);
+    const activity = await repository.getActivity(request.params.activityId, actor.familyId);
+    if (activity === undefined) return reply.code(404).send({ error: 'ACTIVITY_NOT_FOUND' });
+    try {
+      const updated = rescheduleActivity(activity, parsed.data.schedule, new Date().toISOString(), actor.userId);
+      const revision = updated.scheduleHistory.length > activity.scheduleHistory.length ? updated.scheduleHistory.at(-1) : undefined;
+      return reply.send(await repository.updateActivity(updated, revision));
+    } catch (error) {
+      if (error instanceof PlanningError) return reply.code(400).send({ error: error.code });
+      throw error;
+    }
   });
 }

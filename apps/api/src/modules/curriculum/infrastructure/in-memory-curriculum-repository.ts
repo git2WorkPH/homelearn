@@ -8,6 +8,9 @@ export class InMemoryCurriculumRepository implements CurriculumRepository {
     this.#versions.set(version.id, version);
     return version;
   }
-  async get(versionId: string): Promise<CurriculumVersion | undefined> { return this.#versions.get(versionId); }
-  async list(): Promise<readonly CurriculumVersion[]> { return [...this.#versions.values()]; }
+  async get(versionId: string, familyId: string): Promise<CurriculumVersion | undefined> {
+    const version = this.#versions.get(versionId);
+    return version?.familyId === undefined || version.familyId === familyId ? version : undefined;
+  }
+  async list(familyId: string): Promise<readonly CurriculumVersion[]> { return [...this.#versions.values()].filter(version => version.familyId === undefined || version.familyId === familyId); }
 }

@@ -25,6 +25,10 @@ Status: Updated 23 November 2026. Current verified and partial outcomes are reco
 
 Add implementation paths and evidence links as milestones are delivered; never promote a proposed design to verified behaviour.
 
+## Parent login and family access — 28 November 2026
+
+FR-001 is PARTIAL: Better Auth email/password login, iOS secure session-cookie storage, disabled public sign-up, local account provisioning, single-family membership resolution and family-scoped API access are implemented. Migration `0004_parent_auth_family_access` is prepared but its application and account provisioning are NOT VERIFIED. Family/learner management screens, multiple learners, two-family authorization regressions and native device login remain NOT_STARTED. AC-001 and AC-013 are therefore NOT VERIFIED. See [parent login change record](../changes/parent-login-family-access.md).
+
 ## HL-003A evidence update — 20 November 2026
 
 FR-002 is PARTIAL: configuration domain only. AC-004 domain precedence/clearing/reference/conflict cases pass in apps/api/test/learning-configuration.test.ts. NFR-006 snapshot detachment is tested; persisted historical records remain NOT_STARTED. All onboarding, authenticated API and UI criteria remain unverified. Foundation NFR-003 checks pass for current sources. See [HL-003A](../changes/HL-003A-configuration-domain.md) for scope and commands.

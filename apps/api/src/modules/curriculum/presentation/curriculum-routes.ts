@@ -3,6 +3,7 @@ import { z } from 'zod';
 import type { CurriculumProvenance, LearningOutcome } from '../domain/curriculum.js';
 import { CurriculumError, publishCurriculumVersion, type CurriculumVersion } from '../domain/curriculum.js';
 import type { CurriculumRepository } from '../application/curriculum-repository.js';
+import { requireHomeLearnActor } from '../../identity/fastify-context.js';
 const outcome = z.object({ id: z.string(), code: z.string(), title: z.string(), description: z.string().optional() }).strict();
 type OutcomeInput = z.infer<typeof outcome>;
 const provenanceSchema = z.object({ kind: z.enum(['official', 'family']), publisher: z.string(), sourceUrl: z.string().url().optional(), curriculumId: z.string(), versionLabel: z.string(), effectiveFrom: z.string(), effectiveTo: z.string().optional(), retrievedAt: z.string() }).strict();
@@ -16,9 +17,9 @@ function toResponse(value: CurriculumVersion) {
   return { id: value.id, curriculumId: value.curriculumId, versionLabel: value.versionLabel, provenance: value.provenance, outcomes: value.outcomes };
 }
 export async function registerCurriculumRoutes(app: FastifyInstance, repository: CurriculumRepository): Promise<void> {
-  app.get('/api/v1/curricula', async (_request, reply) => reply.header('cache-control', 'no-store').send((await repository.list()).map(toResponse)));
+  app.get('/api/v1/curricula', async (request, reply) => reply.header('cache-control', 'no-store').send((await repository.list(requireHomeLearnActor(request).familyId)).map(toResponse)));
   app.get<{ Params: { versionId: string } }>('/api/v1/curricula/:versionId', async (request, reply) => {
-    const found = await repository.get(request.params.versionId);
+    const found = await repository.get(request.params.versionId, requireHomeLearnActor(request).familyId);
     if (found === undefined) return reply.code(404).send({ error: 'NOT_FOUND' });
     return reply.header('cache-control', 'no-store').send(toResponse(found));
   });
@@ -29,7 +30,8 @@ export async function registerCurriculumRoutes(app: FastifyInstance, repository:
       const input = parsed.data;
       const provenance: CurriculumProvenance = toProvenance(input.provenance);
       const outcomes: LearningOutcome[] = input.outcomes.map(toOutcome);
-      const created = publishCurriculumVersion({ ...input, provenance, outcomes });
+      const actor = requireHomeLearnActor(request);
+      const created = publishCurriculumVersion({ ...input, ...(provenance.kind === 'family' ? { familyId: actor.familyId } : {}), provenance, outcomes });
       const saved = await repository.create(created);
       return reply.code(201).header('location', `/api/v1/curricula/${encodeURIComponent(saved.id)}`).header('cache-control', 'no-store').send(toResponse(saved));
     } catch (error) {

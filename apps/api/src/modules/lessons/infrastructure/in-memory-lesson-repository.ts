@@ -12,8 +12,9 @@ export class InMemoryLessonRepository implements LessonRepository {
     return version;
   }
 
-  async get(id: string): Promise<LessonVersion | undefined> {
-    return this.#versions.get(id);
+  async get(id: string, familyId: string): Promise<LessonVersion | undefined> {
+    const lesson = this.#versions.get(id);
+    return lesson?.familyId === familyId ? lesson : undefined;
   }
 
   async list(familyId: string): Promise<readonly LessonVersion[]> {

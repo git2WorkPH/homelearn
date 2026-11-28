@@ -8,6 +8,7 @@
     ],
     "orientation": "default",
     "userInterfaceStyle": "automatic",
+    "scheme": "homelearn",
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.jaycac.homelearn",
@@ -19,6 +20,9 @@
       "eas": {
         "projectId": "b0bb3e97-1046-457a-8064-abfba8d109d7"
       }
-    }
+    },
+    "plugins": [
+      "expo-secure-store"
+    ]
   }
 }
